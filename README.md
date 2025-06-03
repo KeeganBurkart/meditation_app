@@ -8,6 +8,10 @@ Mindful Connect is a meditation tracking and social platform consisting of an iO
 - Earn badges for completing challenges
 - Create challenges with optional private visibility
 
+## Community Challenges
+Mindful Connect supports community meditation challenges where users can join and log their progress toward a shared goal. The helper functions in `src/mindful.py` manage challenge creation, participation, and minute tracking.
+A small HTML/JavaScript timer is included under the `web/` folder so the basic timing functionality can also be used in the browser. Open `web/index.html` to try it locally.
+
 ## Technology Stack
 
 The following tools and frameworks will be used for the project:

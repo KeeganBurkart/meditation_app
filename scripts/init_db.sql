@@ -52,3 +52,4 @@ CREATE TABLE IF NOT EXISTS challenges (
     is_private INTEGER DEFAULT 0,
     FOREIGN KEY(created_by) REFERENCES users(id)
 );
+

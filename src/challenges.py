@@ -37,3 +37,4 @@ def get_user_badges(conn: sqlite3.Connection, user_id: int) -> list[str]:
         (user_id,),
     )
     return [row[0] for row in cur.fetchall()]
+

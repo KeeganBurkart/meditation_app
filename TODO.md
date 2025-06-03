@@ -29,17 +29,16 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] Create activity feed with ability to give encouragement and comments
 - [ ] Respect privacy settings when displaying session details
 
-## 6. Challenges
-- [ ] Build streak and duration challenge mechanisms
+- [x] Build streak and duration challenge mechanisms
 - [ ] Add community challenge tracking
 - [x] Award badges and achievements
 - [x] (Premium) Allow users to create private challenges
 
 ## 7. Personal Insights & Statistics
 - [ ] Dashboard with total time, session count, and streaks
-- [ ] Graphs for consistency over time
-- [ ] Mood correlation analytics
-- [ ] Time of day and location analysis
+- [x] Graphs for consistency over time
+- [x] Mood correlation analytics
+- [x] Time of day and location analysis
 
 ## 8. Website Companion
 - [ ] Implement all user‑facing features from the app on the website
@@ -51,9 +50,9 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] Consider ad placement for free tier
 
 ## 10. UI/UX Design
-- [ ] Create a calm and minimalist design language
-- [ ] Provide configurable notifications
-- [ ] Write copy in a supportive and encouraging tone
+- [x] Create a calm and minimalist design language
+- [x] Provide configurable notifications
+- [x] Write copy in a supportive and encouraging tone
 
 ## 11. Testing & Quality Assurance
 - [ ] Unit tests for backend logic and data models

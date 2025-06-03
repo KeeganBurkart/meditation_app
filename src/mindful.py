@@ -43,3 +43,54 @@ def get_custom_meditation_types(conn: sqlite3.Connection, user_id: int) -> list[
         (user_id,),
     )
     return [row[0] for row in cur.fetchall()]
+
+
+def create_challenge(
+    conn: sqlite3.Connection,
+    name: str,
+    target_minutes: int,
+    start_date: str,
+    end_date: str,
+) -> int:
+    """Create a community challenge and return its ID."""
+    cur = conn.execute(
+        "INSERT INTO community_challenges (name, target_minutes, start_date, end_date)"
+        " VALUES (?, ?, ?, ?)",
+        (name, target_minutes, start_date, end_date),
+    )
+    conn.commit()
+    return cur.lastrowid
+
+
+def join_challenge(conn: sqlite3.Connection, user_id: int, challenge_id: int) -> None:
+    """Join a community challenge if not already joined."""
+    conn.execute(
+        "INSERT OR IGNORE INTO challenge_progress (user_id, challenge_id) VALUES (?, ?)",
+        (user_id, challenge_id),
+    )
+    conn.commit()
+
+
+def log_challenge_progress(
+    conn: sqlite3.Connection, user_id: int, challenge_id: int, minutes: int
+) -> None:
+    """Increment progress for a user's challenge participation."""
+    conn.execute(
+        "UPDATE challenge_progress SET minutes = minutes + ? "
+        "WHERE user_id = ? AND challenge_id = ?",
+        (minutes, user_id, challenge_id),
+    )
+    conn.commit()
+
+
+def get_challenge_progress(
+    conn: sqlite3.Connection, user_id: int, challenge_id: int
+) -> int:
+    """Return current progress in minutes for ``user_id`` in ``challenge_id``."""
+    cur = conn.execute(
+        "SELECT minutes FROM challenge_progress WHERE user_id = ? AND challenge_id = ?",
+        (user_id, challenge_id),
+    )
+    row = cur.fetchone()
+    return row[0] if row else 0
+
