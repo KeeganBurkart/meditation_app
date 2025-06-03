@@ -2,6 +2,8 @@
 
 Mindful Connect is a meditation tracking and social platform consisting of an iOS app and a companion website.
 
+A small HTML/JavaScript timer is included under the `web/` folder so the basic timing functionality can also be used in the browser. Open `web/index.html` to try it locally.
+
 ## Technology Stack
 
 The following tools and frameworks will be used for the project:
