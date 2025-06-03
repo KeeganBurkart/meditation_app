@@ -14,7 +14,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] Add privacy settings for profile visibility
 
 ## 3. Meditation Logging
-- [ ] Design data model for sessions (duration, type, time of day, date, location)
+- [x] Design data model for sessions (duration, type, time of day, date, location)
 - [ ] Create forms for manual entry of session details
 - [ ] Enable optional photo upload and notes
 - [ ] Support custom meditation types
