@@ -29,8 +29,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] Create activity feed with ability to give encouragement and comments
 - [ ] Respect privacy settings when displaying session details
 
-## 6. Challenges
-- [ ] Build streak and duration challenge mechanisms
+- [x] Build streak and duration challenge mechanisms
 - [ ] Add community challenge tracking
 - [ ] Award badges and achievements
 - [ ] (Premium) Allow users to create private challenges
