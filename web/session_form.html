@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meditation Session Entry</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    form { display: flex; flex-direction: column; max-width: 400px; }
+    label { margin-top: 1rem; }
+    input, textarea, select { padding: 0.5rem; font-size: 1rem; }
+    button { margin-top: 1.5rem; padding: 0.7rem; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Log Meditation Session</h1>
+  <form id="session-form" enctype="multipart/form-data">
+    <label>
+      Date:
+      <input type="date" name="date" required>
+    </label>
+    <label>
+      Time:
+      <input type="time" name="time">
+    </label>
+    <label>
+      Duration (minutes):
+      <input type="number" name="duration" min="1" required>
+    </label>
+    <label>
+      Meditation Type:
+      <input type="text" name="type" placeholder="e.g., Mindfulness" required>
+    </label>
+    <label>
+      Location:
+      <input type="text" name="location" placeholder="Optional">
+    </label>
+    <label>
+      Photo (optional):
+      <input type="file" name="photo" accept="image/*">
+    </label>
+    <label>
+      Notes (optional):
+      <textarea name="notes" rows="4" placeholder="How was your session?"></textarea>
+    </label>
+    <button type="submit">Save Session</button>
+  </form>
+</body>
+</html>
