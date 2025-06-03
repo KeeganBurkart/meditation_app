@@ -35,20 +35,21 @@ CREATE TABLE IF NOT EXISTS custom_meditation_types (
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS community_challenges (
+-- Table to store earned badges for each user
+CREATE TABLE IF NOT EXISTS badges (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    target_minutes INTEGER NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL
+    user_id INTEGER NOT NULL,
+    badge_name TEXT NOT NULL,
+    awarded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS challenge_progress (
-    user_id INTEGER NOT NULL,
-    challenge_id INTEGER NOT NULL,
-    minutes INTEGER NOT NULL DEFAULT 0,
-    PRIMARY KEY (user_id, challenge_id),
-    FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(challenge_id) REFERENCES community_challenges(id)
+-- Challenges optionally allow private visibility
+CREATE TABLE IF NOT EXISTS challenges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_by INTEGER NOT NULL,
+    is_private INTEGER DEFAULT 0,
+    FOREIGN KEY(created_by) REFERENCES users(id)
 );
 

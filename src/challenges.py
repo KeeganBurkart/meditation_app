@@ -1,57 +1,40 @@
-"""Challenge logic for Mindful Connect.
-
-This module provides simple utility classes and functions for evaluating
-streak and duration based challenges.
-"""
+"""Simple challenge and badge helpers."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date, timedelta
-from typing import Iterable
+import sqlite3
 
 
-def current_streak(dates: Iterable[date]) -> int:
-    """Return the current consecutive-day streak from ``dates``.
-
-    The streak is calculated using the most recent date in the list and
-    counts backward until a gap is encountered. Duplicate dates are ignored.
-    """
-    unique_dates = sorted(set(dates), reverse=True)
-    if not unique_dates:
-        return 0
-
-    streak = 1
-    for prev, curr in zip(unique_dates, unique_dates[1:]):
-        if prev - curr == timedelta(days=1):
-            streak += 1
-        else:
-            break
-    return streak
+def create_challenge(
+    conn: sqlite3.Connection,
+    name: str,
+    created_by: int,
+    *,
+    is_private: bool = False,
+) -> int:
+    """Insert a challenge and return its ID."""
+    cur = conn.execute(
+        "INSERT INTO challenges (name, created_by, is_private) VALUES (?, ?, ?)",
+        (name, created_by, int(is_private)),
+    )
+    conn.commit()
+    return cur.lastrowid
 
 
-def total_duration(durations: Iterable[int]) -> int:
-    """Return the sum of ``durations`` in minutes."""
-    return sum(durations)
+def award_badge(conn: sqlite3.Connection, user_id: int, badge_name: str) -> None:
+    """Award a badge to the given user."""
+    conn.execute(
+        "INSERT INTO badges (user_id, badge_name) VALUES (?, ?)",
+        (user_id, badge_name),
+    )
+    conn.commit()
 
 
-@dataclass
-class StreakChallenge:
-    """Challenge requiring a consecutive-day streak."""
+def get_user_badges(conn: sqlite3.Connection, user_id: int) -> list[str]:
+    """Return a list of badge names for ``user_id``."""
+    cur = conn.execute(
+        "SELECT badge_name FROM badges WHERE user_id = ? ORDER BY awarded_at",
+        (user_id,),
+    )
+    return [row[0] for row in cur.fetchall()]
 
-    target_days: int
-
-    def is_completed(self, session_dates: Iterable[date]) -> bool:
-        """Return ``True`` if ``session_dates`` meet the target streak."""
-        return current_streak(session_dates) >= self.target_days
-
-
-@dataclass
-class DurationChallenge:
-    """Challenge requiring a total duration."""
-
-    target_minutes: int
-
-    def is_completed(self, durations: Iterable[int]) -> bool:
-        """Return ``True`` if the total duration meets ``target_minutes``."""
-        return total_duration(durations) >= self.target_minutes
