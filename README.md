@@ -33,3 +33,7 @@ The following tools and frameworks will be used for the project:
 - **API Style**: RESTful endpoints
 
 These technologies were chosen for their strong community support, modern feature sets, and the ability to scale both the mobile and web experiences consistently.
+
+## Dashboard Analytics
+
+The `src/dashboard.py` module provides helper functions to calculate total meditation time, session count, and current streaks from a list of `MeditationSession` objects.
