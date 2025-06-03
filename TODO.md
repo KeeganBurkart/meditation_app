@@ -51,9 +51,9 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] Consider ad placement for free tier
 
 ## 10. UI/UX Design
-- [ ] Create a calm and minimalist design language
-- [ ] Provide configurable notifications
-- [ ] Write copy in a supportive and encouraging tone
+- [x] Create a calm and minimalist design language
+- [x] Provide configurable notifications
+- [x] Write copy in a supportive and encouraging tone
 
 ## 11. Testing & Quality Assurance
 - [ ] Unit tests for backend logic and data models
