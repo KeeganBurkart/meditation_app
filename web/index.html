@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindful Connect Web Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Mindful Connect</h1>
+    </header>
+    <main>
+        <div class="timer-controls">
+            <label for="duration">Duration (minutes):</label>
+            <input type="number" id="duration" value="10" min="1" max="120">
+            <button id="startBtn">Start</button>
+            <button id="stopBtn" disabled>Stop</button>
+        </div>
+        <div id="display" class="timer-display">00:00</div>
+    </main>
+    <footer>
+        <p>&copy; 2023 Mindful Connect</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
