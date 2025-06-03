@@ -18,7 +18,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] Create forms for manual entry of session details
 - [ ] Enable optional photo upload and notes
 - [ ] Support custom meditation types
-- [ ] (Optional) Build in‑app timer for automatic logging on iOS
+- [x] (Optional) Build in‑app timer for automatic logging on iOS
 
 ## 4. Mood Tracking
 - [ ] Allow users to record mood before and after each session
