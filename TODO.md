@@ -36,7 +36,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] (Premium) Allow users to create private challenges
 
 ## 7. Personal Insights & Statistics
-- [ ] Dashboard with total time, session count, and streaks
+- [x] Dashboard with total time, session count, and streaks
 - [ ] Graphs for consistency over time
 - [ ] Mood correlation analytics
 - [ ] Time of day and location analysis
