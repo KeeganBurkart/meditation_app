@@ -3,7 +3,7 @@
 This document outlines the major tasks required to build the "Mindful Connect" iOS app and companion website. It is organized by feature area and priority. Use this as a starting point for planning and development.
 
 ## 1. Project Setup
-- [ ] Establish a repository structure for iOS, web, and backend services
+- [x] Establish a repository structure for iOS, web, and backend services
 - [ ] Select technology stack (e.g., Swift for iOS, React for web, and a suitable backend framework)
 - [ ] Configure continuous integration and testing
 - [ ] Set up initial database schema
