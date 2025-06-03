@@ -2,6 +2,12 @@
 
 Mindful Connect is a meditation tracking and social platform consisting of an iOS app and a companion website.
 
+## Features
+
+- Track meditation sessions and moods
+- Earn badges for completing challenges
+- Create challenges with optional private visibility
+
 ## Technology Stack
 
 The following tools and frameworks will be used for the project:

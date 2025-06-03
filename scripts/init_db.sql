@@ -34,3 +34,21 @@ CREATE TABLE IF NOT EXISTS custom_meditation_types (
     type_name TEXT NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
+
+-- Table to store earned badges for each user
+CREATE TABLE IF NOT EXISTS badges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    badge_name TEXT NOT NULL,
+    awarded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+-- Challenges optionally allow private visibility
+CREATE TABLE IF NOT EXISTS challenges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_by INTEGER NOT NULL,
+    is_private INTEGER DEFAULT 0,
+    FOREIGN KEY(created_by) REFERENCES users(id)
+);
