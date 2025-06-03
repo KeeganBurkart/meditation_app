@@ -37,9 +37,9 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 
 ## 7. Personal Insights & Statistics
 - [ ] Dashboard with total time, session count, and streaks
-- [ ] Graphs for consistency over time
-- [ ] Mood correlation analytics
-- [ ] Time of day and location analysis
+- [x] Graphs for consistency over time
+- [x] Mood correlation analytics
+- [x] Time of day and location analysis
 
 ## 8. Website Companion
 - [ ] Implement all user‑facing features from the app on the website
