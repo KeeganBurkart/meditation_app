@@ -1,5 +1,6 @@
 -- Initial Mindful Connect database schema
--- This script creates tables for users, sessions, and moods.
+-- This script creates tables for users, sessions, moods,
+-- and custom meditation types.
 
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,4 +26,11 @@ CREATE TABLE IF NOT EXISTS moods (
     mood_before INTEGER,
     mood_after INTEGER,
     FOREIGN KEY(session_id) REFERENCES sessions(id)
+);
+
+CREATE TABLE IF NOT EXISTS custom_meditation_types (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    type_name TEXT NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
 );
