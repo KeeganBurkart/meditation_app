@@ -44,7 +44,6 @@ These technologies were chosen for their strong community support, modern featur
 
 The `src/dashboard.py` module provides helper functions to calculate total meditation time, session count, and current streaks from a list of `MeditationSession` objects.
 
-
 ## Running the Web App
 
 Install Node dependencies inside `web/frontend` and run the Vite dev server:
@@ -60,3 +59,11 @@ The backend API can be started with:
 ```bash
 uvicorn backend.main:app --reload
 ```
+
+## Monetization
+
+Mindful Connect includes a Premium tier that unlocks advanced statistics,
+unlimited friends, and private challenges. The `subscriptions` module tracks a
+user's tier so the app can gate these features. Free tier users may see small
+text advertisements served via the `ads` module.
+
