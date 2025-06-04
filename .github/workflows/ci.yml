@@ -22,3 +22,13 @@ jobs:
         pip install -r requirements.txt
     - name: Run tests
       run: pytest -v
+
+  ios-tests:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run iOS UI tests
+      run: |
+        xcodebuild test -project ios/MindfulConnect/MindfulConnect.xcodeproj \
+          -scheme MindfulConnect \
+          -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
