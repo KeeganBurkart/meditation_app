@@ -78,3 +78,13 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     end_date DATE,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
+
+-- Notification reminders for users
+CREATE TABLE IF NOT EXISTS user_notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    reminder_time TIMESTAMP NOT NULL,
+    message TEXT,
+    is_enabled BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
