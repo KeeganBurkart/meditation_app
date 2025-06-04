@@ -60,6 +60,10 @@ CREATE TABLE IF NOT EXISTS challenges (
     name TEXT NOT NULL,
     created_by INTEGER NOT NULL,
     is_private BOOLEAN DEFAULT FALSE,
+    target_minutes INTEGER,
+    start_date DATE,
+    end_date DATE,
+    description TEXT,
     FOREIGN KEY(created_by) REFERENCES users(id)
 );
 
@@ -118,9 +122,11 @@ CREATE TABLE IF NOT EXISTS activity_feed (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     target_user_id INTEGER,
     related_session_id INTEGER,
+    related_feed_item_id INTEGER,
     FOREIGN KEY(user_id) REFERENCES users(id),
     FOREIGN KEY(target_user_id) REFERENCES users(id),
-    FOREIGN KEY(related_session_id) REFERENCES sessions(id)
+    FOREIGN KEY(related_session_id) REFERENCES sessions(id),
+    FOREIGN KEY(related_feed_item_id) REFERENCES activity_feed(id)
 );
 
 -- Advertisements for in-app promotions or announcements

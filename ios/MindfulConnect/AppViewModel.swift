@@ -8,9 +8,9 @@ public class AppViewModel: ObservableObject {
     @Published public var meditationTypes: [MeditationType] = []
     private var cancellables = Set<AnyCancellable>()
 
-    private let api: MockAPIClient
+    private let api: APIClient
 
-    public init(api: MockAPIClient = MockAPIClient()) {
+    public init(api: APIClient = APIClient()) {
         self.api = api
     }
 

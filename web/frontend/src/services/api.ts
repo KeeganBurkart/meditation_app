@@ -309,15 +309,22 @@ export async function socialLogin(
   provider: string,
   token: string,
 ): Promise<string | null> {
-  // Simulate a network delay then resolve a fake token
-  return new Promise((resolve) => {
-    setTimeout(() => resolve("mock_access_token"), 300);
+  const res = await fetch(`${API_URL}/auth/social-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ provider, token }),
   });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.access_token as string;
 }
 
 export async function updateProfileVisibility(isPublic: boolean) {
-  // Placeholder mock implementation
-  return new Promise((resolve) => setTimeout(resolve, 200));
+  await fetch(`${API_URL}/users/me/profile-visibility`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ is_public: isPublic }),
+  });
 }
 
 export interface UserProfile {
@@ -334,21 +341,83 @@ export interface UserProfile {
 export async function getUserProfile(
   userId: string,
 ): Promise<UserProfile | null> {
-  // Return mock profile data
-  return new Promise((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          user_id: Number(userId),
-          display_name: "Mock User",
-          bio: "This is a mock profile.",
-          photo_url: "",
-          is_public: true,
-          total_minutes: 123,
-          session_count: 45,
-          recent_activity: ["Meditated for 10 minutes", "Completed challenge"],
-        }),
-      200,
-    ),
-  );
+  const res = await fetch(`${API_URL}/users/${userId}/profile`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// ----------------------------- Analytics -----------------------------
+
+export interface DateValuePoint {
+  date_str: string;
+  value: number;
+}
+
+export interface ConsistencyDataResponse {
+  points: DateValuePoint[];
+}
+
+export interface MoodCorrelationPoint {
+  mood_before: number;
+  mood_after: number;
+}
+
+export interface MoodCorrelationResponse {
+  points: MoodCorrelationPoint[];
+}
+
+export interface HourValuePoint {
+  hour: number;
+  value: number;
+}
+
+export interface TimeOfDayResponse {
+  points: HourValuePoint[];
+}
+
+export interface StringValuePoint {
+  name: string;
+  value: number;
+}
+
+export interface LocationFrequencyResponse {
+  points: StringValuePoint[];
+}
+
+export async function getConsistencyData(): Promise<DateValuePoint[]> {
+  const res = await fetch(`${API_URL}/analytics/me/consistency`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  const data = (await res.json()) as ConsistencyDataResponse;
+  return data.points;
+}
+
+export async function getMoodCorrelationData(): Promise<MoodCorrelationPoint[]> {
+  const res = await fetch(`${API_URL}/analytics/me/mood-correlation`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  const data = (await res.json()) as MoodCorrelationResponse;
+  return data.points;
+}
+
+export async function getTimeOfDayData(): Promise<HourValuePoint[]> {
+  const res = await fetch(`${API_URL}/analytics/me/time-of-day`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  const data = (await res.json()) as TimeOfDayResponse;
+  return data.points;
+}
+
+export async function getLocationFrequencyData(): Promise<StringValuePoint[]> {
+  const res = await fetch(`${API_URL}/analytics/me/location-frequency`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  const data = (await res.json()) as LocationFrequencyResponse;
+  return data.points;
 }

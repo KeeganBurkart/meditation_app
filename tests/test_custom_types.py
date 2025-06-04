@@ -12,5 +12,5 @@ def test_add_and_retrieve_custom_type():
         "INSERT INTO users (email, password_hash) VALUES (?, ?)",
         ("user@example.com", "hash"),
     )
-    mindful.add_custom_meditation_type(conn, 1, "Zen")
-    assert mindful.get_custom_meditation_types(conn, 1) == ["Zen"]
+    type_id = mindful.add_custom_meditation_type(conn, 1, "Zen")
+    assert mindful.get_custom_meditation_types(conn, 1) == [(type_id, "Zen")]

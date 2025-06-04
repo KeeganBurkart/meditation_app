@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { logSession, uploadSessionPhoto } from "../services/api";
+import {
+  logSession,
+  uploadSessionPhoto,
+  getCustomTypes,
+  CustomMeditationType,
+} from "../services/api";
 
 export default function SessionForm() {
   const navigate = useNavigate();

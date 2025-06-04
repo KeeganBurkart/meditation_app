@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct ActivityFeedView: View {
+    @EnvironmentObject var viewModel: AppViewModel
     @State private var feedItems: [FeedItem] = []
     @State private var newMessage: String = ""
-    @State private var targetUserId: Int = 0
+    @State private var targetItemId: Int = 0
+    private let api = APIClient()
 
     var body: some View {
         VStack {
@@ -23,7 +25,8 @@ struct ActivityFeedView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                 Button("Comment") {
                     Task {
-                        if let item = try? await MockAPIClient.shared.sendComment(newMessage, from: 1, to: targetUserId) {
+                        guard let token = viewModel.authToken else { return }
+                        if let item = try? await api.addFeedComment(feedItemId: targetItemId, text: newMessage, authToken: token) {
                             feedItems.insert(item, at: 0)
                             newMessage = ""
                         }
@@ -31,7 +34,8 @@ struct ActivityFeedView: View {
                 }
                 Button("Encourage") {
                     Task {
-                        if let item = try? await MockAPIClient.shared.sendEncouragement(newMessage, from: 1, to: targetUserId) {
+                        guard let token = viewModel.authToken else { return }
+                        if let item = try? await api.addFeedEncouragement(feedItemId: targetItemId, text: newMessage, authToken: token) {
                             feedItems.insert(item, at: 0)
                             newMessage = ""
                         }
@@ -42,7 +46,8 @@ struct ActivityFeedView: View {
         }
         .onAppear {
             Task {
-                if let items = try? await MockAPIClient.shared.fetchFeed() {
+                guard let token = viewModel.authToken else { return }
+                if let items = try? await api.fetchFeed(authToken: token) {
                     feedItems = items
                 }
             }
