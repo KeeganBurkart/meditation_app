@@ -169,9 +169,7 @@ def create_session(
         mood_before=info.moodBefore,
         mood_after=info.moodAfter,
     )
-    # Assuming feed.log_session was updated to work with DB
-    # and potentially accepts session_id
-    feed.log_session(current_user_id, f"{info.type} {info.duration}m", session_id)
+    feed.log_session(current_user_id, f"{info.type} {info.duration}m")
     return {"session_id": session_id}
 
 
@@ -197,10 +195,10 @@ def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
     count = dashboard.calculate_session_count(sess)
     streak = dashboard.calculate_current_streak(sess)
     return {
-        "total_time": total,
-        "session_count": count,
-        "current_streak": streak,
-    }  # More descriptive keys
+        "total": total,
+        "sessions": count,
+        "streak": streak,
+    }
 
 
 @app.get("/feed", response_model=list)  # Changed path to /feed, user_id from token
