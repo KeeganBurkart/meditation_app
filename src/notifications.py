@@ -24,10 +24,14 @@ class NotificationManager:
         self._conn = conn
 
     def _to_time(self, value: Any) -> time:
+        """Coerce various input formats to a ``datetime.time`` instance."""
         if isinstance(value, time):
             return value
         if isinstance(value, datetime):
             return value.time()
+        # Values coming from the database might be strings that include a date
+        # portion (e.g. ``"2023-01-01 07:30:00"``).  Only the time component is
+        # needed for the reminder so we strip off anything before a space.
         value_str = str(value)
         if " " in value_str:
             value_str = value_str.split(" ")[-1]
