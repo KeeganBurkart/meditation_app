@@ -23,7 +23,7 @@ export default function ActivityFeedPage() {
   return (
     <main>
       <h1>Activity Feed</h1>
-      <ul>
+      <ul className="feed-list">
         {items.map((i) => (
           <FeedItemCard key={i.item_id} item={i} />
         ))}

@@ -62,3 +62,48 @@ button {
   max-width: 400px;
   width: 100%;
 }
+
+/* Responsive refinements */
+@media (max-width: 600px) {
+  main {
+    padding: 0.5rem;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+}
+
+.feed-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feed-item {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 600px) {
+  .feed-item {
+    padding: 1rem;
+  }
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 600px) {
+  .form-row {
+    flex-direction: row;
+  }
+}
+
+.form-row label {
+  flex: 1;
+}
