@@ -1,38 +1,32 @@
-# Deployment and Local Setup
+# Deployment Guide
 
-This guide explains how to run the FastAPI server locally and how to initialize the database.
+This document outlines how to run the FastAPI backend and PostgreSQL database in
+production using Docker as well as the steps to build the web interface.
 
-## Environment Variables
+## Backend and Database
 
-- `DB_FILE` – path to the SQLite database file. Both the server and `scripts/setup_database.sh` use this variable. It defaults to `mindful.db` if not set.
-
-## Running the FastAPI Server
-
-1. Create a Python virtual environment and install dependencies:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt fastapi uvicorn pydantic
-   ```
-2. Optionally set a custom database location:
-   ```bash
-   export DB_FILE=/path/to/mindful.db
-   ```
-3. Start the server with uvicorn:
-   ```bash
-   uvicorn backend.main:app --reload
-   ```
-
-## Deployment Scripts
-
-The repository includes a simple script to create the SQLite database schema:
+1. Ensure Docker is installed.
+2. Run the deployment script:
 
 ```bash
-./scripts/setup_database.sh
+./scripts/deploy_backend.sh
 ```
 
-The script respects the `DB_FILE` variable so you can create the database in a custom location:
+This uses `docker-compose.yml` to start a PostgreSQL container and build the
+backend image defined by the `Dockerfile`. The database is automatically
+initialized from `scripts/init_db_postgres.sql`. The backend listens on port
+`8000` and connects to the database using the `DATABASE_URL` environment
+variable.
+
+## Web Application
+
+To prepare the web frontend for production:
 
 ```bash
-DB_FILE=data.db ./scripts/setup_database.sh
+cd web/frontend
+npm install
+npm run build
 ```
+
+The `dist/` directory contains static files that can be served by any web host
+or CDN alongside the backend API.

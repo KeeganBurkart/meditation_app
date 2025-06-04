@@ -1,6 +1,5 @@
 pytest>=7.0
 matplotlib
-
 fastapi
 uvicorn
 pydantic

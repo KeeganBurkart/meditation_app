@@ -1,0 +1,23 @@
+version: '3'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: mindful
+      POSTGRES_PASSWORD: mindful
+      POSTGRES_DB: mindful
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./scripts/init_db_postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+  backend:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql://mindful:mindful@db:5432/mindful
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+volumes:
+  db-data:
