@@ -9,6 +9,7 @@ import CommunityChallenges from "./pages/CommunityChallenges";
 import MoodHistory from "./pages/MoodHistory";
 import Subscription from "./pages/Subscription";
 import EditProfile from "./pages/EditProfile";
+import UserProfile from "./pages/UserProfile";
 import "./App.css";
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/moods" element={<MoodHistory />} />
         <Route path="/subscription" element={<Subscription />} />
         <Route path="/profile" element={<EditProfile />} />
+        <Route path="/profile/:id" element={<UserProfile />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
