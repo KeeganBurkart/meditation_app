@@ -19,6 +19,10 @@ jobs:
     - name: Install frontend dependencies
       working-directory: web/frontend
       run: npm ci
+    - name: Lint frontend code
+      working-directory: web/frontend
+      run: |
+        prettier --check .
     - name: Run frontend unit tests
       working-directory: web/frontend
       run: npm test
@@ -35,6 +39,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install httpx
+        pip install black
+    - name: Lint Python code
+      run: black --check .
     - name: Run Python tests
       run: pytest -v
 

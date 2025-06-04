@@ -1,35 +1,30 @@
-const API_URL = 'http://localhost:8000';
+const API_URL = "http://localhost:8000";
 
 function getAuthHeader() {
-  const token = localStorage.getItem('token');
-  // Chose single quotes for 'token' and unquoted 'Authorization' key for consistency.
+  const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// Preferred multi-line parameter formatting for readability.
 export async function signup(
   email: string,
   password: string,
   displayName: string,
 ) {
   const res = await fetch(`${API_URL}/auth/signup`, {
-    // Standardized to single quotes and ensured trailing comma.
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, display_name: displayName }),
   });
   return res.ok;
 }
 
-// Preferred multi-line parameter formatting.
 export async function login(
   email: string,
   password: string,
 ): Promise<string | null> {
   const res = await fetch(`${API_URL}/auth/login`, {
-    // Standardized to single quotes and ensured trailing comma.
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
   if (!res.ok) return null;
@@ -50,15 +45,13 @@ export interface SessionData {
 
 export async function logSession(data: SessionData) {
   await fetch(`${API_URL}/sessions`, {
-    // Standardized to single quotes and ensured trailing comma.
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify(data),
   });
 }
 
 export async function getDashboard() {
-  // Preferred multi-line formatting for fetch options.
   const res = await fetch(`${API_URL}/dashboard/me`, {
     headers: getAuthHeader(),
   });
@@ -80,9 +73,8 @@ export async function getCommunityChallenges() {
 
 export async function joinCommunityChallenge(challengeId: number) {
   await fetch(`${API_URL}/challenges/join`, {
-    // Standardized to single quotes and ensured trailing comma.
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ challenge_id: challengeId }),
   });
 }
@@ -94,7 +86,6 @@ export async function getMoodHistory() {
 }
 
 export async function getSubscription() {
-  // Preferred multi-line formatting for fetch options.
   const res = await fetch(`${API_URL}/subscriptions/me`, {
     headers: getAuthHeader(),
   });
@@ -104,24 +95,21 @@ export async function getSubscription() {
 
 export async function updateSubscription(tier: string) {
   await fetch(`${API_URL}/subscriptions/me`, {
-    // Standardized to single quotes and ensured trailing comma.
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ tier }),
   });
 }
 
 export async function addNotification(time: string, message: string) {
   await fetch(`${API_URL}/notifications`, {
-    // Standardized to single quotes and ensured trailing comma.
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ reminder_time: time, message }),
   });
 }
 
 export async function getNotifications() {
-  // Preferred multi-line formatting for fetch options.
   const res = await fetch(`${API_URL}/notifications`, {
     headers: getAuthHeader(),
   });
@@ -131,19 +119,16 @@ export async function getNotifications() {
 
 export async function updateBio(bio: string) {
   await fetch(`${API_URL}/users/me/bio`, {
-    // Standardized to single quotes and ensured trailing comma.
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ bio }),
   });
 }
 
 export async function uploadPhoto(file: File) {
-  // The second conflicting part was more complete, including the fetch call closing and response handling.
-  // Standardized to single quotes, ensured trailing comma, and corrected the final ')' to '}'.
   const res = await fetch(`${API_URL}/users/me/photo`, {
-    method: 'POST',
-    headers: { 'X-Filename': file.name, ...getAuthHeader() },
+    method: "POST",
+    headers: { "X-Filename": file.name, ...getAuthHeader() },
     body: file,
   });
   if (!res.ok) return null;

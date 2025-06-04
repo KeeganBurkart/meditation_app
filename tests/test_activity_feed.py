@@ -10,7 +10,7 @@ def setup_db():
     for idx in range(1, 5):
         conn.execute(
             "INSERT INTO users (email, password_hash) VALUES (?, ?)",
-            (f'user{idx}@example.com', 'pw'),
+            (f"user{idx}@example.com", "pw"),
         )
     conn.commit()
     return conn

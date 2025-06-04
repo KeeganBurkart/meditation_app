@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { getFeed } from '../services/api';
+import { useEffect, useState } from "react";
+import { getFeed } from "../services/api";
 
 interface FeedItem {
   item_id: number;
@@ -19,7 +19,7 @@ export default function ActivityFeedPage() {
     <main>
       <h1>Activity Feed</h1>
       <ul>
-        {items.map(i => (
+        {items.map((i) => (
           <li key={i.item_id}>{i.message}</li>
         ))}
       </ul>
