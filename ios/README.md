@@ -30,11 +30,11 @@ The command builds the app and executes the `MindfulConnectUITests` target.
 `APIClient` and the models in `APIModels.swift` provide mocked networking
 endpoints used during development. `MockAPIClient` loads JSON from the
 `MockResponses` directory to simulate backend calls for feed interactions,
-badges, private challenges and advertisements.
+badges and private challenges.
 
 ## Mocked Social Features
 
-`ActivityFeedView`, `BadgeListView`, `PrivateChallengesView` and `AdBannerView` provide placeholder SwiftUI interfaces for the new community functionality. They consume `MockAPIClient` to display feed comments, earned badges, premium challenges and in-app ads while real APIs are under development.
+`ActivityFeedView`, `BadgeListView` and `PrivateChallengesView` provide placeholder SwiftUI interfaces for the new community functionality. They consume `MockAPIClient` to display feed comments, earned badges and premium challenges while real APIs are under development.
 
 `APIClient` in `MindfulConnect` provides Combine publishers for the mocked backend
 endpoints. It includes calls for social login, updating profile visibility and
