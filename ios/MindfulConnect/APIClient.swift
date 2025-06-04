@@ -133,4 +133,22 @@ public struct APIClient {
             .map { _ in () }
             .eraseToAnyPublisher()
     }
+
+    // MARK: - Analytics
+
+    public func fetchConsistency(authToken: String) -> AnyPublisher<ConsistencyDataResponse, Error> {
+        request("analytics/me/consistency", authToken: authToken)
+    }
+
+    public func fetchMoodCorrelation(authToken: String) -> AnyPublisher<MoodCorrelationResponse, Error> {
+        request("analytics/me/mood-correlation", authToken: authToken)
+    }
+
+    public func fetchTimeOfDay(authToken: String) -> AnyPublisher<TimeOfDayResponse, Error> {
+        request("analytics/me/time-of-day", authToken: authToken)
+    }
+
+    public func fetchLocationFrequency(authToken: String) -> AnyPublisher<LocationFrequencyResponse, Error> {
+        request("analytics/me/location-frequency", authToken: authToken)
+    }
 }

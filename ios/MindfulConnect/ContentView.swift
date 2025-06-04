@@ -14,6 +14,9 @@ struct ContentView: View {
                     NavigationLink("Meditation Types") {
                         MeditationTypesView()
                     }
+                    NavigationLink("Analytics") {
+                        AnalyticsGraphsView(authToken: viewModel.authToken ?? "")
+                    }
                 }
                 .navigationTitle("Mindful Connect")
             } else {

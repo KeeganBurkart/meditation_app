@@ -37,6 +37,11 @@ from src.api_models import (
     LocationFrequencyResponse,
     AdResponse,
 )
+from src.feed_models import (
+    CommentInput,
+    EncouragementInput,
+    FeedInteractionResponse,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mindful")
