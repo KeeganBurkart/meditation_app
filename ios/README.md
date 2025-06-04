@@ -27,7 +27,6 @@ The command builds the app and executes the `MindfulConnectUITests` target.
 
 ## Networking Layer
 
-
 `APIClient` and the models in `APIModels.swift` provide mocked networking
 endpoints used during development. `MockAPIClient` loads JSON from the
 `MockResponses` directory to simulate backend calls for feed interactions,
