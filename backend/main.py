@@ -6,7 +6,7 @@ from datetime import time, date
 from fastapi import FastAPI, HTTPException, Request, Depends, Header, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from jose import JWTError, jwt as jose_jwt
+from jose import jwt as jose_jwt
 from pathlib import Path
 from uuid import uuid4
 
@@ -93,6 +93,20 @@ else:
     mindful.init_db(conn)
 
 
+def ensure_default_user() -> None:
+    """Insert a default account used for all requests if it doesn't exist."""
+    cur = conn.execute("SELECT id FROM users WHERE id = 1")
+    if not cur.fetchone():
+        conn.execute(
+            "INSERT INTO users (id, email, display_name, is_public) VALUES (?, ?, ?, ?)",
+            (1, "owner@example.com", "Owner", 1),
+        )
+        conn.commit()
+
+
+ensure_default_user()
+
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     logger.info("%s %s %s", request.method, request.url.path, request.query_params)
@@ -112,40 +126,14 @@ notify_manager = notifications.NotificationManager(conn)
 ad_manager = ads.AdManager(conn)
 
 
-def get_current_user(authorization: str = Header(None)) -> int:
-    """Return the authenticated user's ID from a Bearer token."""
-    # ``Authorization`` header should look like ``Bearer <token>``.
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Not authenticated: Missing token")
-
-    token = authorization.split(" ", 1)[1]
-    try:
-        # Decode and validate the JWT. ``SECRET_KEY`` and ``ALGORITHM`` must
-        # match the values used when the token was created.
-        payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id_from_token = payload.get("user_id")
-        if user_id_from_token is None:
-            # ``user_id`` is a custom claim we expect to always be present.
-            raise HTTPException(status_code=401, detail="Invalid token: user_id missing")
-    except JWTError as e:
-        logger.error(f"JWTError: {e}")
-        raise HTTPException(status_code=401, detail="Invalid token")
-    return int(user_id_from_token)
+def get_current_user(_: str = Header(None)) -> int:
+    """Return the single application's user id."""
+    return 1
 
 
-def get_optional_user(authorization: str = Header(None)) -> int | None:
-    """Return the user ID if a valid Bearer token is provided, else ``None``."""
-    if not authorization or not authorization.startswith("Bearer "):
-        return None
-    token = authorization.split(" ", 1)[1]
-    try:
-        payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id_from_token = payload.get("user_id")
-        if user_id_from_token is None:
-            return None
-        return int(user_id_from_token)
-    except JWTError:
-        return None
+def get_optional_user(_: str = Header(None)) -> int | None:
+    """Return the single application's user id."""
+    return 1
 
 
 def _get_user_sessions_with_moods(user_id: int) -> list[session_models.MeditationSession]:
