@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
-from datetime import time
+from datetime import time, date
 from fastapi import FastAPI, HTTPException, Request
 import logging
 from pydantic import BaseModel
@@ -36,7 +36,7 @@ async def log_requests(request: Request, call_next):
     logger.info("Completed %s", response.status_code)
     return response
 
-feed = activity.ActivityFeed()
+feed = activity.ActivityFeed(conn)
 notify_manager = notifications.NotificationManager()
 
 class SignUp(BaseModel):
@@ -112,7 +112,7 @@ def get_dashboard(user_id: int):
             r[0],
             r[1],
             time.fromisoformat(r[3]) if r[3] else time(0, 0),
-            session_date=r[2],
+            session_date=date.fromisoformat(r[2]) if isinstance(r[2], str) else r[2],
             location=r[4] or ''
         )
         for r in records

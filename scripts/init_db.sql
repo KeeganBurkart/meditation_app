@@ -107,3 +107,17 @@ CREATE TABLE IF NOT EXISTS challenge_progress (
     FOREIGN KEY(user_id) REFERENCES users(id),
     FOREIGN KEY(challenge_id) REFERENCES community_challenges(id)
 );
+
+-- Social activity feed items
+CREATE TABLE IF NOT EXISTS activity_feed (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    item_type TEXT NOT NULL,
+    message TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    target_user_id INTEGER,
+    related_session_id INTEGER,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(target_user_id) REFERENCES users(id),
+    FOREIGN KEY(related_session_id) REFERENCES sessions(id)
+);
