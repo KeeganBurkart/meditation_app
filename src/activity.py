@@ -25,6 +25,17 @@ class ActivityFeed:
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
         self._friends: Dict[int, Set[int]] = {}
+        self._has_related_column = self._detect_related_column()
+
+    def _detect_related_column(self) -> bool:
+        """Return ``True`` if ``related_feed_item_id`` exists on ``activity_feed``."""
+        try:
+            self._conn.execute(
+                "SELECT related_feed_item_id FROM activity_feed LIMIT 1"
+            )
+            return True
+        except Exception:
+            return False
 
     def add_friend(self, user_id: int, friend_id: int) -> None:
         """Establish a friendship so ``user_id`` sees ``friend_id`` in their feed."""
@@ -84,22 +95,29 @@ class ActivityFeed:
         if not friends:
             return []
         placeholders = ",".join("?" for _ in friends)
+        columns = "id, user_id, item_type, message, timestamp, target_user_id"
+        if self._has_related_column:
+            columns += ", related_feed_item_id"
         query = (
-            f"SELECT id, user_id, item_type, message, timestamp, target_user_id, related_feed_item_id "
-            f"FROM activity_feed WHERE user_id IN ({placeholders}) "
+            f"SELECT {columns} FROM activity_feed WHERE user_id IN ({placeholders}) "
             f"ORDER BY timestamp DESC, id DESC LIMIT ?"
         )
         cur = self._conn.execute(query, (*friends, limit))
         rows = cur.fetchall()
-        return [
-            FeedItem(
-                r[0],
-                r[1],
-                r[2],
-                r[3],
-                datetime.fromisoformat(r[4]) if isinstance(r[4], str) else r[4],
-                r[5],
-                r[6],
+        items: List[FeedItem] = []
+        for r in rows:
+            timestamp = datetime.fromisoformat(r[4]) if isinstance(r[4], str) else r[4]
+            target_user_id = r[5]
+            related_id = r[6] if self._has_related_column else None
+            items.append(
+                FeedItem(
+                    r[0],
+                    r[1],
+                    r[2],
+                    r[3],
+                    timestamp,
+                    target_user_id,
+                    related_id,
+                )
             )
-            for r in rows
-        ]
+        return items
