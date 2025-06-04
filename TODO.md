@@ -25,7 +25,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] Store mood data for later correlation analysis
 
 ## 5. Social & Community Features
-- [ ] Implement follow/unfollow system
+- [x] Implement follow/unfollow system
 - [x] Create activity feed with ability to give encouragement and comments
 - [ ] Respect privacy settings when displaying session details
 

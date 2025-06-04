@@ -7,6 +7,7 @@ Mindful Connect is a meditation tracking and social platform consisting of an iO
 - Track meditation sessions and moods
 - Earn badges for completing challenges
 - Create challenges with optional private visibility
+- Follow other users and manage your network
 - Activity feed to view friends' sessions and send encouragement
 - Sign up with email or social login providers
 
