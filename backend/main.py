@@ -56,8 +56,11 @@ async def log_requests(request: Request, call_next):
     logger.info("%s %s %s", request.method, request.url.path, request.query_params)
     response = await call_next(request)
     logger.info(
-        "Completed %s %s", request.method, request.url.path
-    )  # Removed status code as it's in response
+        "Completed %s %s %s",
+        request.method,
+        request.url.path,
+        response.status_code,
+    )
     return response
 
 
