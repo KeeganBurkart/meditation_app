@@ -7,9 +7,9 @@ export default function EditProfile() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await updateBio(1, bio);
+    await updateBio(bio);
     if (file) {
-      await uploadPhoto(1, file);
+      await uploadPhoto(file);
     }
     alert('Profile updated');
   }

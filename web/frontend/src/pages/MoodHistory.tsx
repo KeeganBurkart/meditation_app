@@ -10,7 +10,7 @@ export default function MoodHistory() {
   const [history, setHistory] = useState<Mood[]>([]);
 
   useEffect(() => {
-    getMoodHistory(1).then(setHistory);
+    getMoodHistory().then(setHistory);
   }, []);
 
   return (

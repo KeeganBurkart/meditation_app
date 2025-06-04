@@ -7,19 +7,19 @@ interface Notification {
   message: string;
 }
 
-export default function NotificationPreferences({ userId }: { userId: number }) {
+export default function NotificationPreferences() {
   const [time, setTime] = useState('07:00');
   const [message, setMessage] = useState('Meditate');
   const [notes, setNotes] = useState<Notification[]>([]);
 
   useEffect(() => {
-    getNotifications(userId).then(setNotes);
-  }, [userId]);
+    getNotifications().then(setNotes);
+  }, []);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    await addNotification(userId, time, message);
-    getNotifications(userId).then(setNotes);
+    await addNotification(time, message);
+    getNotifications().then(setNotes);
   }
 
   return (

@@ -9,13 +9,13 @@ export default function Subscription() {
   const [sub, setSub] = useState<Sub | null>(null);
 
   useEffect(() => {
-    getSubscription(1).then(setSub);
+    getSubscription().then(setSub);
   }, []);
 
   async function toggle() {
     if (!sub) return;
     const next = sub.tier === 'premium' ? 'free' : 'premium';
-    await updateSubscription(1, next);
+    await updateSubscription(next);
     setSub({ tier: next });
   }
 

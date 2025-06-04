@@ -89,7 +89,7 @@ def test_sessions_and_dashboard(client):
         'location': 'Home'
     }, headers=headers)
 
-    resp = client.get(f'/dashboard/{user_id}', headers=headers)
+    resp = client.get('/dashboard/me', headers=headers)
     assert resp.status_code == 200
     data = resp.json()
     assert data['total'] == 25
