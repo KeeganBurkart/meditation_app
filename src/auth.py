@@ -7,8 +7,13 @@ from typing import Optional
 
 from passlib.context import CryptContext
 
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use bcrypt with a reasonable work factor. ``passlib`` will automatically
+# generate a unique salt for each password hash.
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__rounds=12,
+)
 
 
 def hash_password(password: str) -> str:
