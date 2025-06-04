@@ -18,7 +18,10 @@ app = FastAPI()
 db_url = os.getenv("DATABASE_URL")
 if db_url and db_url.startswith("postgresql"):
     import psycopg2
-    conn = psycopg2.connect(db_url)
+    from src.pgutil import PGConnectionWrapper
+
+    raw_conn = psycopg2.connect(db_url)
+    conn = PGConnectionWrapper(raw_conn)
     mindful.init_postgres_db(conn)
 else:
     conn = sqlite3.connect('mindful.db', check_same_thread=False)
