@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, Request
 import logging
 from pydantic import BaseModel
 
-from src import auth, mindful, dashboard, relationships, activity, notifications, sessions as session_models
+from src import auth, mindful, dashboard, relationships, activity, notifications, subscriptions, sessions as session_models
 from src import monitoring
 
 logging.basicConfig(level=logging.INFO)
@@ -129,3 +129,56 @@ def add_notification(data: NotificationInput):
 def list_notifications(user_id: int):
     notes = notify_manager.get_notifications(user_id)
     return [n.__dict__ for n in notes]
+
+
+class JoinChallengeInput(BaseModel):
+    user_id: int
+    challenge_id: int
+
+
+@app.get('/challenges')
+def list_challenges():
+    cur = conn.execute(
+        'SELECT id, name, target_minutes, start_date, end_date FROM community_challenges'
+    )
+    rows = cur.fetchall()
+    return [
+        {
+            'id': r[0],
+            'name': r[1],
+            'target_minutes': r[2],
+            'start_date': r[3],
+            'end_date': r[4],
+        }
+        for r in rows
+    ]
+
+
+@app.post('/challenges/join')
+def join_challenge(data: JoinChallengeInput):
+    mindful.join_challenge(conn, data.user_id, data.challenge_id)
+    return {"status": "ok"}
+
+
+@app.get('/moods/{user_id}')
+def get_moods(user_id: int):
+    moods = mindful.get_user_moods(conn, user_id)
+    return [
+        {"before": m[0], "after": m[1]} for m in moods
+    ]
+
+
+class SubscriptionUpdate(BaseModel):
+    tier: str
+
+
+@app.get('/subscriptions/{user_id}')
+def get_subscription(user_id: int):
+    tier = subscriptions.get_user_tier(conn, user_id)
+    return {"tier": tier}
+
+
+@app.post('/subscriptions/{user_id}')
+def update_subscription(user_id: int, data: SubscriptionUpdate):
+    subscriptions.subscribe_user(conn, user_id, data.tier, '2023-01-01')
+    return {"status": "ok"}
