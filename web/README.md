@@ -1,8 +1,7 @@
 # Web App
 
-This folder now contains a small React + TypeScript project built with Vite.
-The original HTML pages remain for reference, but the new application lives in
-`frontend/` and communicates with the FastAPI backend under `backend/`.
+This folder contains a React + TypeScript project built with Vite.
+The application lives in `frontend/` and communicates with the FastAPI backend under `backend/`.
 
 ## Getting Started
 
@@ -20,7 +19,7 @@ Start the backend API in another terminal:
 uvicorn backend.main:app --reload
 ```
 
-Open the printed local URL to use the timer, session form and other pages.
+Open the printed local URL to access the app.
 
 ## Deployment
 
