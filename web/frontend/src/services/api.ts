@@ -1,8 +1,11 @@
 const API_URL = "http://localhost:8000";
 
 function getAuthHeader() {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  // Access tokens are stored in ``localStorage`` after login. When present we
+  // send them as a ``Bearer`` token so protected endpoints authenticate the
+  // current user.
+  const token = localStorage.getItem('token');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
 export async function signup(

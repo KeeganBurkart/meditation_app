@@ -71,16 +71,19 @@ notify_manager = notifications.NotificationManager(conn)
 
 def get_current_user(authorization: str = Header(None)) -> int:
     """Return the authenticated user's ID from a Bearer token."""
+    # ``Authorization`` header should look like ``Bearer <token>``.
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not authenticated: Missing token")
+
     token = authorization.split(" ", 1)[1]
     try:
+        # Decode and validate the JWT. ``SECRET_KEY`` and ``ALGORITHM`` must
+        # match the values used when the token was created.
         payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id_from_token = payload.get("user_id")
-        if user_id_from_token is None:  # Check if user_id key exists and is not None
-            raise HTTPException(
-                status_code=401, detail="Invalid token: user_id missing"
-            )
+        if user_id_from_token is None:
+            # ``user_id`` is a custom claim we expect to always be present.
+            raise HTTPException(status_code=401, detail="Invalid token: user_id missing")
     except JWTError as e:
         logger.error(f"JWTError: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
@@ -211,9 +214,13 @@ def get_user_feed(current_user_id: int = Depends(get_current_user)):
     if not user_ids_for_feed:
         return []
 
+    # Build a dynamic placeholder string (?,?,?) for the ``IN`` clause based on
+    # how many user ids we're querying for. SQLite requires ``?`` for each value.
     placeholders = ",".join("?" for _ in user_ids_for_feed)
-    # Assumes 'feed_items' table and 'users.is_public' column exist
-    # This query needs to be adapted if ActivityFeed class handles DB querying directly
+
+    # Assumes 'feed_items' table and 'users.is_public' column exist. If the
+    # ``ActivityFeed`` class handles its own DB queries this will need to match
+    # that implementation.
     query = (
         "SELECT f.id, f.user_id, u.display_name, f.item_type, f.message, f.timestamp, f.target_user_id "
         "FROM feed_items f JOIN users u ON f.user_id = u.id "
@@ -380,7 +387,8 @@ async def upload_my_photo(
     if not file_data:
         raise HTTPException(status_code=400, detail="No image data received.")
 
-    # Basic filename generation, consider more robust naming/extension handling
+    # Generate a file name using a client provided name if available. This
+    # keeps a hint of the original extension while avoiding collisions.
     original_filename = request.headers.get("X-Filename", f"photo_{current_user_id}")
     ext = Path(original_filename).suffix or ".jpg"  # Default to .jpg if no extension
     if ext.lower() not in [
@@ -394,6 +402,7 @@ async def upload_my_photo(
             detail="Unsupported image format. Please use JPG, PNG, or GIF.",
         )
 
+    # Use a random UUID to avoid overwriting existing files with the same name.
     filename = f"{uuid4().hex}{ext}"
     dest = UPLOAD_DIR / filename
     try:

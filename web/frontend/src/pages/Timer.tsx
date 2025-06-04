@@ -4,6 +4,8 @@ import { logSession } from "../services/api";
 export default function Timer() {
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
+  // ``useRef`` stores the interval ID so we can cancel it later without
+  // triggering a re-render of the component.
   const interval = useRef<number>();
 
   function start() {
@@ -18,6 +20,7 @@ export default function Timer() {
     if (interval.current) window.clearInterval(interval.current);
     setRunning(false);
     const minutes = Math.floor(seconds / 60) || 1;
+    // Persist the session to the backend before resetting the timer.
     await logSession({
       date: new Date().toISOString().slice(0, 10),
       time: new Date().toISOString().slice(11, 16),
