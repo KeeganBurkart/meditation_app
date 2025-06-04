@@ -9,8 +9,8 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] Set up initial database schema
 
 ## 2. Authentication & User Accounts
-- [ ] Implement email/password and social login options
-- [ ] Build user profile pages showing photo, bio, stats, and recent activity
+- [x] Build user profile pages showing photo, bio, stats, and recent activity
+- [x] Implement email/password and social login options
 - [ ] Add privacy settings for profile visibility
 
 ## 3. Meditation Logging
@@ -26,7 +26,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 
 ## 5. Social & Community Features
 - [ ] Implement follow/unfollow system
-- [ ] Create activity feed with ability to give encouragement and comments
+- [x] Create activity feed with ability to give encouragement and comments
 - [ ] Respect privacy settings when displaying session details
 
 - [x] Build streak and duration challenge mechanisms
