@@ -1,7 +1,12 @@
 import sqlite3
 
 from src import mindful
-from src.subscriptions import subscribe_user, get_user_tier, is_premium, has_feature_access
+from src.subscriptions import (
+    subscribe_user,
+    get_user_tier,
+    is_premium,
+    has_feature_access,
+)
 
 
 def setup_db():
@@ -26,4 +31,3 @@ def test_has_feature_access():
     assert has_feature_access(conn, 1, "advanced_stats") is False
     subscribe_user(conn, 1, "premium", "2023-01-01")
     assert has_feature_access(conn, 1, "advanced_stats") is True
-

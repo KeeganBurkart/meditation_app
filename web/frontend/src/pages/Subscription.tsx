@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { getSubscription, updateSubscription } from '../services/api';
+import { useEffect, useState } from "react";
+import { getSubscription, updateSubscription } from "../services/api";
 
 interface Sub {
   tier: string;
@@ -14,7 +14,7 @@ export default function Subscription() {
 
   async function toggle() {
     if (!sub) return;
-    const next = sub.tier === 'premium' ? 'free' : 'premium';
+    const next = sub.tier === "premium" ? "free" : "premium";
     await updateSubscription(next);
     setSub({ tier: next });
   }

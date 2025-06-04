@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react';
-import { getCommunityChallenges, joinCommunityChallenge } from '../services/api';
+import { useEffect, useState } from "react";
+import {
+  getCommunityChallenges,
+  joinCommunityChallenge,
+} from "../services/api";
 
 interface Challenge {
   id: number;
@@ -24,7 +27,7 @@ export default function CommunityChallenges() {
     <main>
       <h1>Community Challenges</h1>
       <ul>
-        {challenges.map(c => (
+        {challenges.map((c) => (
           <li key={c.id}>
             {c.name} ({c.target_minutes}m)
             <button onClick={() => handleJoin(c.id)}>Join</button>

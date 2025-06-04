@@ -70,6 +70,13 @@ class ActivityFeed:
         cur = self._conn.execute(query, (*friends, limit))
         rows = cur.fetchall()
         return [
-            FeedItem(r[0], r[1], r[2], r[3], datetime.fromisoformat(r[4]) if isinstance(r[4], str) else r[4], r[5])
+            FeedItem(
+                r[0],
+                r[1],
+                r[2],
+                r[3],
+                datetime.fromisoformat(r[4]) if isinstance(r[4], str) else r[4],
+                r[5],
+            )
             for r in rows
         ]

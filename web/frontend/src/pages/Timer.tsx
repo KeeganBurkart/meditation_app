@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { logSession } from '../services/api';
+import { useState, useRef } from "react";
+import { logSession } from "../services/api";
 
 export default function Timer() {
   const [seconds, setSeconds] = useState(0);
@@ -10,7 +10,7 @@ export default function Timer() {
     if (running) return;
     setRunning(true);
     interval.current = window.setInterval(() => {
-      setSeconds(s => s + 1);
+      setSeconds((s) => s + 1);
     }, 1000);
   }
 
@@ -22,11 +22,11 @@ export default function Timer() {
       date: new Date().toISOString().slice(0, 10),
       time: new Date().toISOString().slice(11, 16),
       duration: minutes,
-      type: 'Timer',
-      location: '',
-      notes: '',
+      type: "Timer",
+      location: "",
+      notes: "",
       moodBefore: 5,
-      moodAfter: 5
+      moodAfter: 5,
     });
     setSeconds(0);
   }
@@ -34,9 +34,13 @@ export default function Timer() {
   return (
     <main>
       <h1>Timer</h1>
-      <div style={{fontSize: '2rem'}}>{seconds}s</div>
-      <button onClick={start} disabled={running}>Start</button>
-      <button onClick={stop} disabled={!running}>Stop</button>
+      <div style={{ fontSize: "2rem" }}>{seconds}s</div>
+      <button onClick={start} disabled={running}>
+        Start
+      </button>
+      <button onClick={stop} disabled={!running}>
+        Stop
+      </button>
     </main>
   );
 }
