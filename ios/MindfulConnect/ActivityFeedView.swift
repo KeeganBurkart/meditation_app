@@ -4,6 +4,8 @@ struct ActivityFeedView: View {
     @State private var feedItems: [FeedItem] = []
     @State private var newMessage: String = ""
     @State private var targetUserId: Int = 0
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     var body: some View {
         VStack {
@@ -23,18 +25,28 @@ struct ActivityFeedView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                 Button("Comment") {
                     Task {
-                        if let item = try? await MockAPIClient.shared.sendComment(newMessage, from: 1, to: targetUserId) {
+                        isLoading = true
+                        do {
+                            let item = try await MockAPIClient.shared.sendComment(newMessage, from: 1, to: targetUserId)
                             feedItems.insert(item, at: 0)
                             newMessage = ""
+                        } catch {
+                            errorMessage = error.localizedDescription
                         }
+                        isLoading = false
                     }
                 }
                 Button("Encourage") {
                     Task {
-                        if let item = try? await MockAPIClient.shared.sendEncouragement(newMessage, from: 1, to: targetUserId) {
+                        isLoading = true
+                        do {
+                            let item = try await MockAPIClient.shared.sendEncouragement(newMessage, from: 1, to: targetUserId)
                             feedItems.insert(item, at: 0)
                             newMessage = ""
+                        } catch {
+                            errorMessage = error.localizedDescription
                         }
+                        isLoading = false
                     }
                 }
             }
@@ -42,10 +54,23 @@ struct ActivityFeedView: View {
         }
         .onAppear {
             Task {
-                if let items = try? await MockAPIClient.shared.fetchFeed() {
+                isLoading = true
+                do {
+                    let items = try await MockAPIClient.shared.fetchFeed()
                     feedItems = items
+                } catch {
+                    errorMessage = error.localizedDescription
                 }
+                isLoading = false
             }
+        }
+        .overlay {
+            if isLoading { ProgressView() }
+        }
+        .alert("Error", isPresented: Binding(get: { errorMessage != nil }, set: { _ in errorMessage = nil })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
         }
     }
 }

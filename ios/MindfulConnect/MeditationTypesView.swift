@@ -33,6 +33,14 @@ struct MeditationTypesView: View {
         }
         .navigationTitle("Meditation Types")
         .onAppear { viewModel.loadMeditationTypes() }
+        .overlay {
+            if viewModel.isLoading { ProgressView() }
+        }
+        .alert("Error", isPresented: Binding(get: { viewModel.errorMessage != nil }, set: { _ in viewModel.errorMessage = nil })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
 }
 

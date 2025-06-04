@@ -20,4 +20,18 @@ final class MindfulConnectUITests: XCTestCase {
         let result = XCTWaiter().wait(for: [expectation], timeout: 10)
         XCTAssertEqual(result, .completed, "Timer should complete and display Finished label")
     }
+
+    func testLoginAndNavigateToMeditationTypes() {
+        let loginButton = app.buttons["Login with Google"]
+        XCTAssertTrue(loginButton.exists)
+        loginButton.tap()
+
+        let meditationLink = app.tables.staticTexts["Meditation Types"]
+        let expectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true"), object: meditationLink)
+        let result = XCTWaiter().wait(for: [expectation], timeout: 5)
+        XCTAssertEqual(result, .completed)
+        meditationLink.tap()
+
+        XCTAssertTrue(app.navigationBars["Meditation Types"].exists)
+    }
 }
