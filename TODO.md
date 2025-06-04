@@ -4,7 +4,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 
 ## 1. Project Setup
 - [x] Establish a repository structure for iOS, web, and backend services
-- [ ] Select technology stack (e.g., Swift for iOS, React for web, and a suitable backend framework)
+- [x] Select technology stack (Swift for iOS, React for web, and Python 3 with FastAPI for the backend)
 - [ ] Configure continuous integration and testing
 - [ ] Set up initial database schema
 
