@@ -1,5 +1,10 @@
 const API_URL = 'http://localhost:8000';
 
+function getAuthHeader() {
+  const token = localStorage.getItem('token');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
 export async function signup(email: string, password: string, displayName: string) {
   const res = await fetch(`${API_URL}/auth/signup`, {
     method: 'POST',
@@ -9,13 +14,15 @@ export async function signup(email: string, password: string, displayName: strin
   return res.ok;
 }
 
-export async function login(email: string, password: string) {
+export async function login(email: string, password: string): Promise<string | null> {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
   });
-  return res.ok;
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.access_token as string;
 }
 
 export interface SessionData {
@@ -32,19 +39,19 @@ export interface SessionData {
 export async function logSession(data: SessionData) {
   await fetch(`${API_URL}/sessions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify(data)
   });
 }
 
 export async function getDashboard() {
-  const res = await fetch(`${API_URL}/dashboard/1`);
+  const res = await fetch(`${API_URL}/dashboard/1`, { headers: getAuthHeader() });
   if (!res.ok) return null;
   return res.json();
 }
 
 export async function getFeed() {
-  const res = await fetch(`${API_URL}/feed/1`);
+  const res = await fetch(`${API_URL}/feed/1`, { headers: getAuthHeader() });
   if (!res.ok) return [];
   return res.json();
 }
@@ -58,19 +65,19 @@ export async function getCommunityChallenges() {
 export async function joinCommunityChallenge(challengeId: number) {
   await fetch(`${API_URL}/challenges/join`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify({ user_id: 1, challenge_id: challengeId })
   });
 }
 
 export async function getMoodHistory(userId: number) {
-  const res = await fetch(`${API_URL}/moods/${userId}`);
+  const res = await fetch(`${API_URL}/moods/${userId}`, { headers: getAuthHeader() });
   if (!res.ok) return [];
   return res.json();
 }
 
 export async function getSubscription(userId: number) {
-  const res = await fetch(`${API_URL}/subscriptions/${userId}`);
+  const res = await fetch(`${API_URL}/subscriptions/${userId}`, { headers: getAuthHeader() });
   if (!res.ok) return null;
   return res.json();
 }
@@ -78,7 +85,7 @@ export async function getSubscription(userId: number) {
 export async function updateSubscription(userId: number, tier: string) {
   await fetch(`${API_URL}/subscriptions/${userId}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify({ tier })
   });
 }
@@ -86,13 +93,13 @@ export async function updateSubscription(userId: number, tier: string) {
 export async function addNotification(userId: number, time: string, message: string) {
   await fetch(`${API_URL}/notifications`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify({ user_id: userId, reminder_time: time, message })
   });
 }
 
 export async function getNotifications(userId: number) {
-  const res = await fetch(`${API_URL}/notifications/${userId}`);
+  const res = await fetch(`${API_URL}/notifications/${userId}`, { headers: getAuthHeader() });
   if (!res.ok) return [];
   return res.json();
 }
@@ -100,7 +107,7 @@ export async function getNotifications(userId: number) {
 export async function updateBio(userId: number, bio: string) {
   await fetch(`${API_URL}/users/${userId}/bio`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify({ bio })
   });
 }
@@ -108,7 +115,7 @@ export async function updateBio(userId: number, bio: string) {
 export async function uploadPhoto(userId: number, file: File) {
   const res = await fetch(`${API_URL}/users/${userId}/photo`, {
     method: 'POST',
-    headers: { 'X-Filename': file.name },
+    headers: { 'X-Filename': file.name, ...getAuthHeader() },
     body: file
   });
   if (!res.ok) return null;
