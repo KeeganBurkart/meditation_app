@@ -14,14 +14,26 @@ public struct Badge: Codable {
     public let awardedAt: Date
 }
 
-public struct Challenge: Codable {
+public struct Challenge: Codable, Identifiable {
     public let id: Int
     public let name: String
-    public let createdBy: Int
-    public let isPrivate: Bool
     public let targetMinutes: Int?
     public let startDate: String?
     public let endDate: String?
+    public let createdBy: Int?
+    public let isPrivate: Bool?
+    public let description: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case targetMinutes = "target_minutes"
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case createdBy = "created_by"
+        case isPrivate = "is_private"
+        case description
+    }
 }
 
 public struct Ad: Codable {
@@ -101,12 +113,22 @@ public struct StringValuePoint: Codable {
 
 public struct LocationFrequencyResponse: Codable {
     public let points: [StringValuePoint]
+}
 
 public struct ChallengeInput: Codable {
     public let name: String
     public let targetMinutes: Int
     public let startDate: String
     public let endDate: String
+    public let description: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case targetMinutes = "target_minutes"
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case description
+    }
 }
 
 public struct Subscription: Codable {
