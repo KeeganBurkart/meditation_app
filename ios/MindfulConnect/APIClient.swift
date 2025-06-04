@@ -153,29 +153,33 @@ public struct APIClient {
         var request = URLRequest(url: baseURL.appendingPathComponent("feed"))
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         let (data, _) = try await session.data(for: request)
-        return try JSONDecoder().decode([FeedItem].self, from: data)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode([FeedItem].self, from: data)
     }
 
-    public func addFeedComment(feedItemId: Int, text: String, authToken: String) async throws -> FeedItem {
+    public func addFeedComment(feedItemId: Int, text: String, authToken: String) async throws -> FeedInteractionResponse {
         let endpoint = "feed/\(feedItemId)/comment"
         var request = URLRequest(url: baseURL.appendingPathComponent(endpoint))
         request.httpMethod = "POST"
-        request.httpBody = try JSONEncoder().encode(["text": text])
+        let body = CommentInput(feedItemId: feedItemId, text: text)
+        request.httpBody = try JSONEncoder().encode(body)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         let (data, _) = try await session.data(for: request)
-        return try JSONDecoder().decode(FeedItem.self, from: data)
+        return try JSONDecoder().decode(FeedInteractionResponse.self, from: data)
     }
 
-    public func addFeedEncouragement(feedItemId: Int, text: String, authToken: String) async throws -> FeedItem {
+    public func addFeedEncouragement(feedItemId: Int, text: String, authToken: String) async throws -> FeedInteractionResponse {
         let endpoint = "feed/\(feedItemId)/encourage"
         var request = URLRequest(url: baseURL.appendingPathComponent(endpoint))
         request.httpMethod = "POST"
-        request.httpBody = try JSONEncoder().encode(["text": text])
+        let body = EncouragementInput(feedItemId: feedItemId, text: text)
+        request.httpBody = try JSONEncoder().encode(body)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         let (data, _) = try await session.data(for: request)
-        return try JSONDecoder().decode(FeedItem.self, from: data)
+        return try JSONDecoder().decode(FeedInteractionResponse.self, from: data)
     }
 
     // MARK: - Badges
