@@ -33,8 +33,8 @@ The following tools and frameworks will be used for the project:
   `web/session_form.html`.
 
 ### Backend
-- **Runtime**: Node.js
-- **Framework**: Express
+- **Language**: Python 3.10
+- **Framework**: FastAPI
 - **Database**: PostgreSQL
 - **API Style**: RESTful endpoints
 
