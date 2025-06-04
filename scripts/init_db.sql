@@ -74,3 +74,13 @@ CREATE TABLE IF NOT EXISTS follows (
 );
 
 
+
+-- Subscription tiers
+CREATE TABLE IF NOT EXISTS subscriptions (
+    user_id INTEGER PRIMARY KEY,
+    tier TEXT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
