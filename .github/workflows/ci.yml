@@ -12,20 +12,40 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Set up Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - name: Install frontend dependencies
+      working-directory: web/frontend
+      run: npm ci
+    - name: Run frontend unit tests
+      working-directory: web/frontend
+      run: npm test
+    - name: Run Playwright tests
+      if: hashFiles('web/frontend/playwright.config.*') != ''
+      working-directory: web/frontend
+      run: |
+        npx playwright install --with-deps
+        npx playwright test
+    - name: Run Cypress tests
+      if: hashFiles('web/frontend/cypress.config.*') != ''
+      working-directory: web/frontend
+      run: npx cypress run
+    - name: Run iOS UI tests
+      if: runner.os == 'macOS'
+      run: |
+        xcodebuild test -scheme MindfulConnectUITests \
+          -destination 'platform=iOS Simulator,name=iPhone 14'
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-    - name: Set up Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-    - name: Install dependencies
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        cd web/frontend && npm install
-    - name: Run tests
+    - name: Run Python tests
       run: pytest -v
     - name: Run e2e tests
       run: |
