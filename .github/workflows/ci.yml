@@ -2,51 +2,98 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Node
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-    - name: Install frontend dependencies
-      working-directory: web/frontend
-      run: npm ci
-    - name: Lint frontend code
-      working-directory: web/frontend
-      run: |
-        prettier --check .
-    - name: Run frontend unit tests
-      working-directory: web/frontend
-      run: npm test
-    - name: Run Cypress tests
-      if: hashFiles('web/frontend/cypress.config.*') != ''
-      working-directory: web/frontend
-      run: npx cypress run
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: Run Python tests
-      run: pytest -v
+      - uses: actions/checkout@v3
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: Install frontend dependencies
+        working-directory: web/frontend
+        run: npm ci
+      - name: Lint frontend code
+        working-directory: web/frontend
+        run: |
+          prettier --check .
+      - name: Run frontend unit tests
+        working-directory: web/frontend
+        run: npm test
+      - name: Run Cypress tests
+        if: hashFiles('web/frontend/cypress.config.*') != ''
+        working-directory: web/frontend
+        run: npx cypress run
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run Python tests
+        run: pytest -v
 
   ios-tests:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Run iOS UI tests
-      run: |
-        xcodebuild test -project ios/MindfulConnect.xcodeproj \
-          -scheme MindfulConnect \
-          -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
+      - uses: actions/checkout@v3
+      - name: Run iOS UI tests
+        run: |
+          xcodebuild test -project ios/MindfulConnect.xcodeproj \
+            -scheme MindfulConnect \
+            -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
+
+  build-and-push-backend:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/backend:latest
+
+  deploy-frontend:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: Install dependencies
+        working-directory: web/frontend
+        run: npm ci
+      - name: Build frontend
+        working-directory: web/frontend
+        run: npm run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: web/frontend/dist
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
