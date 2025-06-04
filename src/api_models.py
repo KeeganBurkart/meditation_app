@@ -61,3 +61,46 @@ class AdResponse(BaseModel):
 
     ad_id: int
     text: str
+
+
+class CustomTypeInput(BaseModel):
+    """Input model for creating or updating a custom meditation type."""
+
+    type_name: str
+
+
+class CustomTypeResponse(BaseModel):
+    """Representation of a custom meditation type."""
+
+    id: int
+    type_name: str
+
+
+class BadgeResponse(BaseModel):
+    """Representation of an earned badge."""
+
+    badge_name: str
+    awarded_at: str
+
+
+class PrivateChallengeInput(BaseModel):
+    """Input for creating or updating a private challenge."""
+
+    name: str
+    target_minutes: int
+    start_date: str
+    end_date: str
+    description: str | None = None
+
+
+class PrivateChallengeResponse(BaseModel):
+    """Representation of a private challenge."""
+
+    id: int
+    name: str
+    target_minutes: int | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    created_by: int | None = None
+    is_private: bool | None = None
+    description: str | None = None
