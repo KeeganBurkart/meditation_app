@@ -2,14 +2,23 @@
 
 from __future__ import annotations
 
-import hashlib
 import sqlite3
 from typing import Optional
 
+from passlib.context import CryptContext
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def hash_password(password: str) -> str:
-    """Return a SHA-256 hash of ``password``."""
-    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+    """Return a secure hash of ``password`` using bcrypt."""
+    return pwd_context.hash(password)
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    """Return ``True`` if ``password`` matches ``hashed``."""
+    return pwd_context.verify(password, hashed)
 
 
 def _insert_user(

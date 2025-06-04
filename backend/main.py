@@ -110,7 +110,7 @@ def signup_user(data: SignUp): # Renamed for clarity from just 'signup'
 def login_user(data: Login): # Renamed for clarity
     cur = conn.execute('SELECT id, password_hash FROM users WHERE email = ?', (data.email,))
     row = cur.fetchone()
-    if not row or auth.hash_password(data.password) != row[1]:
+    if not row or row[1] is None or not auth.verify_password(data.password, row[1]):
         raise HTTPException(status_code=401, detail='Invalid credentials')
     user_id = row[0]
     monitoring.log_event("login", {"user": user_id})
