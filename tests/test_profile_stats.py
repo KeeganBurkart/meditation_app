@@ -24,3 +24,7 @@ def test_get_profile_with_stats():
     assert profile["display_name"] == "User"
     assert profile["total_minutes"] == 25
     assert profile["session_count"] == 2
+    assert profile["recent_activity"] == [
+        "Guided - 2023-01-02",
+        "Guided - 2023-01-01",
+    ]

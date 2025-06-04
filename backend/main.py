@@ -618,6 +618,7 @@ def get_user_profile(
         photo_url=profile["photo_url"],
         total_minutes=profile["total_minutes"],
         session_count=profile["session_count"],
+        recent_activity=profile["recent_activity"],
     )
 
 @app.get("/users/me/custom-meditation-types", response_model=list)

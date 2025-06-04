@@ -121,3 +121,4 @@ class PublicProfileResponse(BaseModel):
     photo_url: str | None = None
     total_minutes: int
     session_count: int
+    recent_activity: List[str]

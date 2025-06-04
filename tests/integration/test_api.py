@@ -234,6 +234,10 @@ def test_public_profile_endpoint(client):
     assert data["display_name"] == "ProfileUser"
     assert data["total_minutes"] == 25
     assert data["session_count"] == 2
+    assert data["recent_activity"] == [
+        "Guided - 2023-01-02",
+        "Guided - 2023-01-01",
+    ]
 
 
 def test_update_profile_visibility_endpoint(client):
