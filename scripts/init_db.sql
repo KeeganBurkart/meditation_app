@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     session_date DATE NOT NULL,
     session_time TEXT,
     location TEXT,
+    photo_url TEXT,
     notes TEXT,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );

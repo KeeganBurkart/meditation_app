@@ -178,7 +178,7 @@ def create_session(
 @app.get("/dashboard/me", response_model=dict)
 def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
     cur = conn.execute(
-        "SELECT duration, session_type, session_date, session_time, location FROM sessions WHERE user_id = ?",
+        "SELECT duration, session_type, session_date, session_time, location, photo_url FROM sessions WHERE user_id = ?",
         (current_user_id,),
     )
     records = cur.fetchall()
@@ -190,6 +190,7 @@ def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
             # Ensure r[2] (session_date) is a date object or string that can be parsed
             session_date=date.fromisoformat(r[2]) if isinstance(r[2], str) else r[2],
             location=r[4] or "",
+            photo_url=r[5],
         )
         for r in records
     ]
@@ -416,6 +417,58 @@ async def upload_my_photo(
     profiles.update_photo(
         conn, current_user_id, photo_url
     )  # Assuming profiles.update_photo exists
+    return {"photo_url": photo_url}
+
+
+@app.post("/sessions/{session_id}/photo", response_model=dict)
+async def upload_session_photo(
+    session_id: int,
+    request: Request,
+    current_user_id: int = Depends(get_current_user),
+):
+    content_type = request.headers.get("Content-Type", "")
+    if not content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=400, detail="Invalid content type, please upload an image."
+        )
+
+    cur = conn.execute(
+        "SELECT user_id FROM sessions WHERE id = ?",
+        (session_id,),
+    )
+    row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if row[0] != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to modify this session")
+
+    file_data = await request.body()
+    if not file_data:
+        raise HTTPException(status_code=400, detail="No image data received.")
+
+    original_filename = request.headers.get("X-Filename", f"session_{session_id}")
+    ext = Path(original_filename).suffix or ".jpg"
+    if ext.lower() not in [".jpg", ".jpeg", ".png", ".gif"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported image format. Please use JPG, PNG, or GIF.",
+        )
+
+    filename = f"{uuid4().hex}{ext}"
+    dest = UPLOAD_DIR / filename
+    try:
+        with open(dest, "wb") as out_file:
+            out_file.write(file_data)
+    except IOError:
+        logger.error(f"IOError saving uploaded session photo to {dest}")
+        raise HTTPException(status_code=500, detail="Could not save uploaded photo.")
+
+    photo_url = f"/uploads/{filename}"
+    conn.execute(
+        "UPDATE sessions SET photo_url = ? WHERE id = ?",
+        (photo_url, session_id),
+    )
+    conn.commit()
     return {"photo_url": photo_url}
 
 

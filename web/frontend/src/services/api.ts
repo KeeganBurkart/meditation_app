@@ -46,12 +46,15 @@ export interface SessionData {
   moodAfter: number;
 }
 
-export async function logSession(data: SessionData) {
-  await fetch(`${API_URL}/sessions`, {
+export async function logSession(data: SessionData): Promise<number | null> {
+  const res = await fetch(`${API_URL}/sessions`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify(data),
   });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.session_id as number;
 }
 
 export async function getDashboard() {
@@ -130,6 +133,16 @@ export async function updateBio(bio: string) {
 
 export async function uploadPhoto(file: File) {
   const res = await fetch(`${API_URL}/users/me/photo`, {
+    method: "POST",
+    headers: { "X-Filename": file.name, ...getAuthHeader() },
+    body: file,
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function uploadSessionPhoto(sessionId: number, file: File) {
+  const res = await fetch(`${API_URL}/sessions/${sessionId}/photo`, {
     method: "POST",
     headers: { "X-Filename": file.name, ...getAuthHeader() },
     body: file,

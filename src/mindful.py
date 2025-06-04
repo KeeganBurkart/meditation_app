@@ -125,13 +125,14 @@ def log_session(
     notes: str | None = None,
     mood_before: int | None = None,
     mood_after: int | None = None,
+    photo_url: str | None = None,
 ) -> int:
     """Insert a session and optional mood data and return the session ID."""
 
     cur = conn.execute(
-        "INSERT INTO sessions (user_id, duration, session_type, session_date, notes) "
-        "VALUES (?, ?, ?, ?, ?) RETURNING id",
-        (user_id, duration, session_type, session_date, notes),
+        "INSERT INTO sessions (user_id, duration, session_type, session_date, session_time, location, photo_url, notes) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
+        (user_id, duration, session_type, session_date, session_time, location, photo_url, notes),
     )
     session_id = cur.fetchone()[0]
 
