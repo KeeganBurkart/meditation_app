@@ -60,6 +60,8 @@ The backend API can be started with:
 uvicorn backend.main:app --reload
 ```
 
+Additional details on environment variables and deployment scripts are available in [docs/deployment.md](docs/deployment.md).
+
 ## Monetization
 
 Mindful Connect includes a Premium tier that unlocks advanced statistics,
