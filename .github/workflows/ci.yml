@@ -47,6 +47,13 @@ jobs:
         pip install -r requirements.txt
     - name: Run Python tests
       run: pytest -v
-    - name: Run e2e tests
+
+  ios-tests:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run iOS UI tests
       run: |
-        cd web/frontend && npm run e2e
+        xcodebuild test -project ios/MindfulConnect/MindfulConnect.xcodeproj \
+          -scheme MindfulConnect \
+          -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
