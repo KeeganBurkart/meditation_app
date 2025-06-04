@@ -60,6 +60,18 @@ The backend API can be started with:
 uvicorn backend.main:app --reload
 ```
 
+Install the backend Python dependencies before running the API or tests:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+With the requirements installed, the test suite can be executed using:
+
+```bash
+pytest
+```
+
 Additional details on environment variables and deployment scripts are available in [docs/deployment.md](docs/deployment.md).
 
 ## Monetization
