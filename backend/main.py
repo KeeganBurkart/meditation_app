@@ -21,7 +21,8 @@ if db_url and db_url.startswith("postgresql"):
     conn = psycopg2.connect(db_url)
     mindful.init_postgres_db(conn)
 else:
-    conn = sqlite3.connect('mindful.db', check_same_thread=False)
+    db_file = os.getenv("DB_FILE", "mindful.db")
+    conn = sqlite3.connect(db_file, check_same_thread=False)
     mindful.init_db(conn)
 
 
