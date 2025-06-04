@@ -77,6 +77,12 @@ def get_profile_with_stats(conn: sqlite3.Connection, user_id: int) -> dict:
     )
     total_minutes, session_count = cur.fetchone()
 
+    cur = conn.execute(
+        "SELECT session_type, session_date FROM sessions WHERE user_id = ? ORDER BY session_date DESC, id DESC LIMIT 5",
+        (user_id,),
+    )
+    recent_activity = [f"{r[0]} - {r[1]}" for r in cur.fetchall()]
+
     return {
         "user_id": user_id,
         "display_name": display_name,
@@ -85,4 +91,5 @@ def get_profile_with_stats(conn: sqlite3.Connection, user_id: int) -> dict:
         "is_public": bool(is_public),
         "total_minutes": total_minutes or 0,
         "session_count": session_count or 0,
+        "recent_activity": recent_activity,
     }
