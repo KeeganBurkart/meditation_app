@@ -58,3 +58,31 @@ def update_visibility(conn: sqlite3.Connection, user_id: int, is_public: bool) -
         (int(is_public), user_id),
     )
     conn.commit()
+
+
+def get_profile_with_stats(conn: sqlite3.Connection, user_id: int) -> dict:
+    """Return basic profile info and aggregated session stats."""
+    cur = conn.execute(
+        "SELECT display_name, bio, photo_url, is_public FROM users WHERE id = ?",
+        (user_id,),
+    )
+    row = cur.fetchone()
+    if not row:
+        raise ValueError("user not found")
+
+    display_name, bio, photo_url, is_public = row
+    cur = conn.execute(
+        "SELECT COALESCE(SUM(duration), 0), COUNT(*) FROM sessions WHERE user_id = ?",
+        (user_id,),
+    )
+    total_minutes, session_count = cur.fetchone()
+
+    return {
+        "user_id": user_id,
+        "display_name": display_name,
+        "bio": bio,
+        "photo_url": photo_url,
+        "is_public": bool(is_public),
+        "total_minutes": total_minutes or 0,
+        "session_count": session_count or 0,
+    }

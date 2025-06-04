@@ -213,3 +213,24 @@ def test_private_challenge_crud_with_premium_check(client):
     assert resp.status_code == 200
     resp = client.get("/users/me/private-challenges", headers=headers)
     assert resp.json() == []
+
+def test_public_profile_endpoint(client):
+    headers = auth_headers(client, "profile@example.com", "pw", "ProfileUser")
+    # log two sessions for user 1
+    client.post(
+        "/sessions",
+        json={"date": "2023-01-01", "duration": 10, "type": "Guided"},
+        headers=headers,
+    )
+    client.post(
+        "/sessions",
+        json={"date": "2023-01-02", "duration": 15, "type": "Guided"},
+        headers=headers,
+    )
+
+    resp = client.get("/users/1/profile")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["display_name"] == "ProfileUser"
+    assert data["total_minutes"] == 25
+    assert data["session_count"] == 2

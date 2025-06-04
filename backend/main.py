@@ -42,6 +42,7 @@ from src.api_models import (
     BadgeResponse,
     PrivateChallengeInput,
     PrivateChallengeResponse,
+    PublicProfileResponse,
 )
 from src.feed_models import (
     CommentInput,
@@ -128,6 +129,21 @@ def get_current_user(authorization: str = Header(None)) -> int:
         logger.error(f"JWTError: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
     return int(user_id_from_token)
+
+
+def get_optional_user(authorization: str = Header(None)) -> int | None:
+    """Return the user ID if a valid Bearer token is provided, else ``None``."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    token = authorization.split(" ", 1)[1]
+    try:
+        payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id_from_token = payload.get("user_id")
+        if user_id_from_token is None:
+            return None
+        return int(user_id_from_token)
+    except JWTError:
+        return None
 
 
 def _get_user_sessions_with_moods(user_id: int) -> list[session_models.MeditationSession]:
@@ -593,6 +609,29 @@ async def upload_my_photo(
         conn, current_user_id, photo_url
     )  # Assuming profiles.update_photo exists
     return {"photo_url": photo_url}
+
+
+@app.get("/users/{user_id}/profile", response_model=PublicProfileResponse)
+def get_user_profile(
+    user_id: int, requester_id: int | None = Depends(get_optional_user)
+):
+    """Return public profile information for ``user_id``."""
+    try:
+        profile = profiles.get_profile_with_stats(conn, user_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not profile["is_public"] and requester_id != user_id:
+        raise HTTPException(status_code=403, detail="Profile is private")
+
+    return PublicProfileResponse(
+        user_id=profile["user_id"],
+        display_name=profile["display_name"],
+        bio=profile["bio"],
+        photo_url=profile["photo_url"],
+        total_minutes=profile["total_minutes"],
+        session_count=profile["session_count"],
+    )
 
 @app.get("/users/me/custom-meditation-types", response_model=list)
 def list_custom_types(current_user_id: int = Depends(get_current_user)):
