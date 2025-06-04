@@ -1,4 +1,7 @@
 import Foundation
+import Combine
+
+// MARK: - Async Mock API used by preview-only social features
 
 public protocol Networking {
     func fetchFeed() async throws -> [FeedItem]
@@ -32,9 +35,7 @@ public final class MockAPIClient: Networking {
         return try! decoder.decode(T.self, from: data)
     }
 
-    public func fetchFeed() async throws -> [FeedItem] {
-        loadJSON("feed")
-    }
+    public func fetchFeed() async throws -> [FeedItem] { loadJSON("feed") }
 
     public func sendComment(_ text: String, from userId: Int, to targetUserId: Int) async throws -> FeedItem {
         FeedItem(id: Int.random(in: 100...999), userId: userId, itemType: "comment", message: text, timestamp: Date(), targetUserId: targetUserId)
@@ -44,20 +45,15 @@ public final class MockAPIClient: Networking {
         FeedItem(id: Int.random(in: 100...999), userId: userId, itemType: "encouragement", message: text, timestamp: Date(), targetUserId: targetUserId)
     }
 
-    public func fetchBadges(for userId: Int) async throws -> [Badge] {
-        loadJSON("badges")
-    }
+    public func fetchBadges(for userId: Int) async throws -> [Badge] { loadJSON("badges") }
 
-    public func fetchPrivateChallenges(for userId: Int) async throws -> [Challenge] {
-        loadJSON("private_challenges")
-    }
+    public func fetchPrivateChallenges(for userId: Int) async throws -> [Challenge] { loadJSON("private_challenges") }
 
-    public func fetchAd() async throws -> Ad {
-        loadJSON("ad")
-import Combine
+    public func fetchAd() async throws -> Ad { loadJSON("ad") }
+}
 
-/// Handles communication with the backend API for authentication,
-/// profile settings and custom meditation types.
+// MARK: - Real API client used by the app
+
 public struct APIClient {
     public var baseURL: URL
     public var session: URLSession
@@ -98,39 +94,40 @@ public struct APIClient {
     // MARK: - Social Login
     public func socialLogin(_ requestBody: SocialLoginRequest) -> AnyPublisher<SocialLoginResponse, Error> {
         let data = try? JSONEncoder().encode(requestBody)
-        return request("auth/social", method: "POST", body: data)
+        return request("auth/social-login", method: "POST", body: data)
     }
 
     // MARK: - Profile Visibility
     public func updateProfileVisibility(_ requestBody: ProfileVisibilityRequest,
                                         authToken: String) -> AnyPublisher<ProfileVisibilityResponse, Error> {
         let data = try? JSONEncoder().encode(requestBody)
-        return request("profile/visibility", method: "PATCH", body: data, authToken: authToken)
+        return request("users/me/profile-visibility", method: "PUT", body: data, authToken: authToken)
     }
 
     // MARK: - Custom Meditation Types
     public func fetchMeditationTypes(authToken: String) -> AnyPublisher<[MeditationType], Error> {
-        request("meditation_types", authToken: authToken)
+        request("users/me/custom-meditation-types", authToken: authToken)
     }
 
     public func createMeditationType(_ requestBody: CreateMeditationTypeRequest,
                                      authToken: String) -> AnyPublisher<MeditationType, Error> {
         let data = try? JSONEncoder().encode(requestBody)
-        return request("meditation_types", method: "POST", body: data, authToken: authToken)
+        return request("users/me/custom-meditation-types", method: "POST", body: data, authToken: authToken)
     }
 
     public func updateMeditationType(id: UUID,
                                      requestBody: UpdateMeditationTypeRequest,
                                      authToken: String) -> AnyPublisher<MeditationType, Error> {
         let data = try? JSONEncoder().encode(requestBody)
-        let endpoint = "meditation_types/\(id.uuidString)"
+        let endpoint = "users/me/custom-meditation-types/\(id.uuidString)"
         return request(endpoint, method: "PUT", body: data, authToken: authToken)
     }
 
     public func deleteMeditationType(id: UUID, authToken: String) -> AnyPublisher<Void, Error> {
-        let endpoint = "meditation_types/\(id.uuidString)"
+        let endpoint = "users/me/custom-meditation-types/\(id.uuidString)"
         return requestData(endpoint, method: "DELETE", authToken: authToken)
             .map { _ in () }
             .eraseToAnyPublisher()
     }
 }
+
