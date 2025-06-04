@@ -12,7 +12,10 @@ label {
   margin-top: 1rem;
 }
 
-input, textarea, select, button {
+input,
+textarea,
+select,
+button {
   padding: 0.5rem;
   font-size: 1rem;
 }

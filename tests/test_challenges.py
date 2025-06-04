@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import date # Keep from main
+from datetime import date  # Keep from main
 
 from src import mindful
 from src.challenges import (
@@ -26,6 +26,7 @@ def test_private_challenge_and_badges():
     # Award a badge upon completion
     award_badge(conn, 1, "7 Day Streak")
     assert get_user_badges(conn, 1) == ["7 Day Streak"]
+
 
 # Keep all these new tests from main
 def test_current_streak_simple():

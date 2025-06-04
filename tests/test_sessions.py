@@ -20,4 +20,3 @@ def test_session_creation():
     assert session.location == "Home"
     assert session.mood_before == 5
     assert session.mood_after == 8
-

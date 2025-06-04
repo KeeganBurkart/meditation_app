@@ -13,7 +13,9 @@ def consistency_over_time(sessions: Iterable[MeditationSession]) -> Dict[date, i
     return dict(sorted(counts.items()))
 
 
-def mood_correlation_points(sessions: Iterable[MeditationSession]) -> List[Tuple[int, int]]:
+def mood_correlation_points(
+    sessions: Iterable[MeditationSession],
+) -> List[Tuple[int, int]]:
     """Return pairs of mood before/after for sessions that include mood data."""
     return [
         (s.mood_before, s.mood_after)
@@ -34,7 +36,9 @@ def location_frequency(sessions: Iterable[MeditationSession]) -> Dict[str, int]:
     return dict(sorted(counts.items()))
 
 
-def plot_consistency_over_time(sessions: Iterable[MeditationSession], output_path: str) -> None:
+def plot_consistency_over_time(
+    sessions: Iterable[MeditationSession], output_path: str
+) -> None:
     """Plot a line chart of sessions per date."""
     try:
         import matplotlib.pyplot as plt
@@ -55,7 +59,9 @@ def plot_consistency_over_time(sessions: Iterable[MeditationSession], output_pat
     plt.close()
 
 
-def plot_mood_correlation(sessions: Iterable[MeditationSession], output_path: str) -> None:
+def plot_mood_correlation(
+    sessions: Iterable[MeditationSession], output_path: str
+) -> None:
     """Plot a scatter chart of mood before vs. mood after."""
     try:
         import matplotlib.pyplot as plt
@@ -75,7 +81,9 @@ def plot_mood_correlation(sessions: Iterable[MeditationSession], output_path: st
     plt.close()
 
 
-def plot_time_of_day_distribution(sessions: Iterable[MeditationSession], output_path: str) -> None:
+def plot_time_of_day_distribution(
+    sessions: Iterable[MeditationSession], output_path: str
+) -> None:
     """Plot a bar chart showing sessions by hour of day."""
     try:
         import matplotlib.pyplot as plt
@@ -96,7 +104,9 @@ def plot_time_of_day_distribution(sessions: Iterable[MeditationSession], output_
     plt.close()
 
 
-def plot_location_frequency(sessions: Iterable[MeditationSession], output_path: str) -> None:
+def plot_location_frequency(
+    sessions: Iterable[MeditationSession], output_path: str
+) -> None:
     """Plot a bar chart showing sessions per location."""
     try:
         import matplotlib.pyplot as plt
