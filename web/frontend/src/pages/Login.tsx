@@ -10,8 +10,9 @@ export default function Login() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const ok = await login(email, password);
-    if (ok) {
+    const token = await login(email, password);
+    if (token) {
+      localStorage.setItem('token', token);
       navigate('/dashboard');
     } else {
       setError('Invalid credentials');
