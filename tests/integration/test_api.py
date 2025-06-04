@@ -96,10 +96,28 @@ def test_sessions_and_dashboard(client):
 
     resp = client.get("/dashboard/me", headers=headers)
     assert resp.status_code == 200
-    data = resp.json()
-    assert data["total"] == 25
-    assert data["sessions"] == 2
-    assert data["streak"] == 2
+    assert resp.json() == {
+        "total": 25,
+        "sessions": 2,
+        "streak": 2,
+    }
+
+
+def test_dashboard_empty_after_signup(client):
+    resp = client.post(
+        "/auth/signup", json={"email": "empty@example.com", "password": "pw"}
+    )
+    assert resp.status_code == 200
+
+    login = client.post(
+        "/auth/login", json={"email": "empty@example.com", "password": "pw"}
+    )
+    token = login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    resp = client.get("/dashboard/me", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json() == {"total": 0, "sessions": 0, "streak": 0}
 
 
 def auth_headers(client, email: str, password: str, display_name: str = "User"):
