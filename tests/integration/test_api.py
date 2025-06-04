@@ -100,3 +100,116 @@ def test_sessions_and_dashboard(client):
     assert data["total"] == 25
     assert data["sessions"] == 2
     assert data["streak"] == 2
+
+
+def auth_headers(client, email: str, password: str, display_name: str = "User"):
+    client.post(
+        "/auth/signup",
+        json={"email": email, "password": password, "display_name": display_name},
+    )
+    resp = client.post(
+        "/auth/login", json={"email": email, "password": password}
+    )
+    token = resp.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+def test_custom_type_crud(client):
+    headers = auth_headers(client, "ct@example.com", "pw")
+
+    resp = client.post(
+        "/users/me/custom-meditation-types",
+        json={"type_name": "Zen"},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    type_id = resp.json()["id"]
+
+    resp = client.get("/users/me/custom-meditation-types", headers=headers)
+    assert any(t["type_name"] == "Zen" for t in resp.json())
+
+    resp = client.put(
+        f"/users/me/custom-meditation-types/{type_id}",
+        json={"type_name": "Vipassana"},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    resp = client.get("/users/me/custom-meditation-types", headers=headers)
+    assert any(t["type_name"] == "Vipassana" for t in resp.json())
+
+    resp = client.delete(
+        f"/users/me/custom-meditation-types/{type_id}", headers=headers
+    )
+    assert resp.status_code == 200
+    resp = client.get("/users/me/custom-meditation-types", headers=headers)
+    assert resp.json() == []
+
+
+def test_list_badges(client):
+    headers = auth_headers(client, "badge@example.com", "pw")
+    # Directly award a badge using module's connection
+    import backend.main as m
+    from src import challenges as challenges_mod
+
+    challenges_mod.award_badge(m.conn, 1, "Early Adopter")
+
+    resp = client.get("/users/me/badges", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json() == [{"name": "Early Adopter"}]
+
+
+def test_private_challenge_crud_with_premium_check(client):
+    headers_free = auth_headers(client, "free@example.com", "pw")
+    # Free user should be denied
+    resp = client.post(
+        "/users/me/private-challenges",
+        json={
+            "name": "Focus",
+            "target_minutes": 30,
+            "start_date": "2023-01-01",
+            "end_date": "2023-01-07",
+        },
+        headers=headers_free,
+    )
+    assert resp.status_code == 403
+
+    headers = auth_headers(client, "premium@example.com", "pw")
+    import backend.main as m
+    m.subscriptions.subscribe_user(
+        m.conn, 2, "premium", "2023-01-01"
+    )
+
+    resp = client.post(
+        "/users/me/private-challenges",
+        json={
+            "name": "Focus",
+            "target_minutes": 30,
+            "start_date": "2023-01-01",
+            "end_date": "2023-01-07",
+        },
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    challenge_id = resp.json()["id"]
+
+    resp = client.get("/users/me/private-challenges", headers=headers)
+    assert len(resp.json()) == 1
+
+    resp = client.put(
+        f"/users/me/private-challenges/{challenge_id}",
+        json={
+            "name": "Renew Focus",
+            "target_minutes": 40,
+            "start_date": "2023-01-01",
+            "end_date": "2023-01-07",
+        },
+        headers=headers,
+    )
+    assert resp.status_code == 200
+
+    resp = client.delete(
+        f"/users/me/private-challenges/{challenge_id}", headers=headers
+    )
+    assert resp.status_code == 200
+    resp = client.get("/users/me/private-challenges", headers=headers)
+    assert resp.json() == []

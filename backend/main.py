@@ -37,6 +37,11 @@ from src.api_models import (
     LocationFrequencyResponse,
     AdResponse,
 )
+from src.feed_models import (
+    CommentInput,
+    EncouragementInput,
+    FeedInteractionResponse,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mindful")
@@ -173,6 +178,17 @@ class ProfileVisibilityInput(BaseModel):
     is_public: bool
 
 
+class CustomTypeInput(BaseModel):
+    type_name: str
+
+
+class PrivateChallengeInput(BaseModel):
+    name: str
+    target_minutes: int
+    start_date: str
+    end_date: str
+
+
 # Removed redundant BioUpdate class definition that was present in the conflict
 
 
@@ -294,28 +310,29 @@ def get_user_feed(current_user_id: int = Depends(get_current_user)):
     # ``activity_feed`` table stores all social feed items. Ensure the query
     # matches the schema defined in scripts/init_db.sql and ActivityFeed.
     query = (
-        "SELECT f.id, f.user_id, u.display_name, f.item_type, f.message, f.timestamp, f.target_user_id "
+        "SELECT f.id, f.user_id, u.display_name, f.item_type, f.message, f.timestamp, f.target_user_id, f.related_feed_item_id "
         "FROM activity_feed f JOIN users u ON f.user_id = u.id "
-        f"WHERE f.user_id IN ({placeholders}) AND (u.is_public = 1 OR f.user_id = ?) "  # Check privacy or own item
-        "ORDER BY f.timestamp DESC, f.id DESC LIMIT 20"  # Increased limit
+        f"WHERE f.user_id IN ({placeholders}) AND (u.is_public = 1 OR f.user_id = ?) "
+        "ORDER BY f.timestamp DESC, f.id DESC LIMIT 20"
     )
     params = (*list(user_ids_for_feed), current_user_id)
     cur = conn.execute(query, params)
     rows = cur.fetchall()
     return [
-        {
-            "item_id": r[0],
-            "user_id": r[1],
-            "user_display_name": r[2],
-            "item_type": r[3],
-            "message": r[4],
-            "timestamp": (
-                r[5].isoformat() if isinstance(r[5], (date, time)) else r[5]
-            ),  # Ensure ISO format
-            "target_user_id": r[6],
-        }
-        for r in rows
-    ]
+            {
+                "item_id": r[0],
+                "user_id": r[1],
+                "user_display_name": r[2],
+                "item_type": r[3],
+                "message": r[4],
+                "timestamp": (
+                    r[5].isoformat() if isinstance(r[5], (date, time)) else r[5]
+                ),  # Ensure ISO format
+                "target_user_id": r[6],
+                "related_feed_item_id": r[7],
+            }
+            for r in rows
+        ]
 
 
 @app.post("/feed/{feed_item_id}/comment", response_model=FeedInteractionResponse)
@@ -337,7 +354,12 @@ def comment_on_feed_item(
     if not row:
         raise HTTPException(status_code=404, detail="Feed item not found")
     target_user_id = row[0]
-    interaction_id = feed.add_comment(current_user_id, target_user_id, data.text)
+    interaction_id = feed.add_comment(
+        current_user_id,
+        target_user_id,
+        data.text,
+        related_feed_item_id=feed_item_id,
+    )
     return FeedInteractionResponse(
         interaction_id=interaction_id, message="Comment added"
     )
@@ -362,7 +384,10 @@ def encourage_feed_item(
         raise HTTPException(status_code=404, detail="Feed item not found")
     target_user_id = row[0]
     interaction_id = feed.add_encouragement(
-        current_user_id, target_user_id, data.text
+        current_user_id,
+        target_user_id,
+        data.text,
+        related_feed_item_id=feed_item_id,
     )
     return FeedInteractionResponse(
         interaction_id=interaction_id, message="Encouragement sent"
@@ -540,6 +565,115 @@ async def upload_my_photo(
         conn, current_user_id, photo_url
     )  # Assuming profiles.update_photo exists
     return {"photo_url": photo_url}
+
+
+@app.get("/users/me/custom-meditation-types", response_model=list)
+def list_custom_types(current_user_id: int = Depends(get_current_user)):
+    cur = conn.execute(
+        "SELECT id, type_name FROM custom_meditation_types WHERE user_id = ?",
+        (current_user_id,),
+    )
+    return [{"id": r[0], "type_name": r[1]} for r in cur.fetchall()]
+
+
+@app.post("/users/me/custom-meditation-types", response_model=dict)
+def create_custom_type(
+    data: CustomTypeInput, current_user_id: int = Depends(get_current_user)
+):
+    cur = conn.execute(
+        "INSERT INTO custom_meditation_types (user_id, type_name) VALUES (?, ?) RETURNING id",
+        (current_user_id, data.type_name),
+    )
+    new_id = cur.fetchone()[0]
+    conn.commit()
+    return {"id": new_id, "type_name": data.type_name}
+
+
+@app.put("/users/me/custom-meditation-types/{type_id}", response_model=dict)
+def update_custom_type(
+    type_id: int,
+    data: CustomTypeInput,
+    current_user_id: int = Depends(get_current_user),
+):
+    conn.execute(
+        "UPDATE custom_meditation_types SET type_name = ? WHERE id = ? AND user_id = ?",
+        (data.type_name, type_id, current_user_id),
+    )
+    conn.commit()
+    return {"status": "ok"}
+
+
+@app.delete("/users/me/custom-meditation-types/{type_id}", response_model=dict)
+def delete_custom_type(type_id: int, current_user_id: int = Depends(get_current_user)):
+    conn.execute(
+        "DELETE FROM custom_meditation_types WHERE id = ? AND user_id = ?",
+        (type_id, current_user_id),
+    )
+    conn.commit()
+    return {"status": "deleted"}
+
+
+@app.get("/users/me/badges", response_model=list)
+def list_badges(current_user_id: int = Depends(get_current_user)):
+    cur = conn.execute(
+        "SELECT badge_name FROM badges WHERE user_id = ? ORDER BY awarded_at",
+        (current_user_id,),
+    )
+    return [{"name": r[0]} for r in cur.fetchall()]
+
+
+@app.get("/users/me/private-challenges", response_model=list)
+def list_private_challenges(current_user_id: int = Depends(get_current_user)):
+    cur = conn.execute(
+        "SELECT id, name FROM challenges WHERE created_by = ? AND is_private = 1",
+        (current_user_id,),
+    )
+    return [{"id": r[0], "name": r[1]} for r in cur.fetchall()]
+
+
+@app.post("/users/me/private-challenges", response_model=dict)
+def create_private_challenge(
+    data: PrivateChallengeInput, current_user_id: int = Depends(get_current_user)
+):
+    if not subscriptions.is_premium(conn, current_user_id):
+        raise HTTPException(status_code=403, detail="Premium subscription required")
+    cur = conn.execute(
+        "INSERT INTO challenges (name, created_by, is_private) VALUES (?, ?, 1) RETURNING id",
+        (data.name, current_user_id),
+    )
+    challenge_id = cur.fetchone()[0]
+    conn.commit()
+    return {"id": challenge_id, "name": data.name}
+
+
+@app.put("/users/me/private-challenges/{challenge_id}", response_model=dict)
+def update_private_challenge(
+    challenge_id: int,
+    data: PrivateChallengeInput,
+    current_user_id: int = Depends(get_current_user),
+):
+    if not subscriptions.is_premium(conn, current_user_id):
+        raise HTTPException(status_code=403, detail="Premium subscription required")
+    conn.execute(
+        "UPDATE challenges SET name = ? WHERE id = ? AND created_by = ? AND is_private = 1",
+        (data.name, challenge_id, current_user_id),
+    )
+    conn.commit()
+    return {"status": "ok"}
+
+
+@app.delete("/users/me/private-challenges/{challenge_id}", response_model=dict)
+def delete_private_challenge(
+    challenge_id: int, current_user_id: int = Depends(get_current_user)
+):
+    if not subscriptions.is_premium(conn, current_user_id):
+        raise HTTPException(status_code=403, detail="Premium subscription required")
+    conn.execute(
+        "DELETE FROM challenges WHERE id = ? AND created_by = ? AND is_private = 1",
+        (challenge_id, current_user_id),
+    )
+    conn.commit()
+    return {"status": "deleted"}
 
 @app.get("/ads/random", response_model=AdResponse, responses={204: {"description": "No ad available"}})
 def get_random_ad() -> AdResponse | Response:

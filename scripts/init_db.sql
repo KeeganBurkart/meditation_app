@@ -128,9 +128,11 @@ CREATE TABLE IF NOT EXISTS activity_feed (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     target_user_id INTEGER,
     related_session_id INTEGER,
+    related_feed_item_id INTEGER,
     FOREIGN KEY(user_id) REFERENCES users(id),
     FOREIGN KEY(target_user_id) REFERENCES users(id),
-    FOREIGN KEY(related_session_id) REFERENCES sessions(id)
+    FOREIGN KEY(related_session_id) REFERENCES sessions(id),
+    FOREIGN KEY(related_feed_item_id) REFERENCES activity_feed(id)
 );
   
 -- Advertisements for in-app promotions or announcements
