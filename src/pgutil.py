@@ -1,5 +1,6 @@
 class PGConnectionWrapper:
     """Wrap a psycopg2 connection to expose a SQLite-like execute() method."""
+
     def __init__(self, conn):
         self._conn = conn
 
@@ -20,4 +21,3 @@ class PGConnectionWrapper:
 
     def __getattr__(self, name):
         return getattr(self._conn, name)
-

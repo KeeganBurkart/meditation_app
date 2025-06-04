@@ -1,15 +1,15 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Timer from './pages/Timer';
-import SessionForm from './pages/SessionForm';
-import Dashboard from './pages/Dashboard';
-import ActivityFeedPage from './pages/ActivityFeed';
-import CommunityChallenges from './pages/CommunityChallenges';
-import MoodHistory from './pages/MoodHistory';
-import Subscription from './pages/Subscription';
-import EditProfile from './pages/EditProfile';
-import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Timer from "./pages/Timer";
+import SessionForm from "./pages/SessionForm";
+import Dashboard from "./pages/Dashboard";
+import ActivityFeedPage from "./pages/ActivityFeed";
+import CommunityChallenges from "./pages/CommunityChallenges";
+import MoodHistory from "./pages/MoodHistory";
+import Subscription from "./pages/Subscription";
+import EditProfile from "./pages/EditProfile";
+import "./App.css";
 
 export default function App() {
   return (
