@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import { getFeed } from "../services/api";
-
-interface FeedItem {
-  item_id: number;
-  user_id: number;
-  item_type: string;
-  message: string;
-}
+import FeedItemCard, { FeedItem } from "../components/FeedItemCard";
+import Advertisement from "../components/Advertisement";
 
 export default function ActivityFeedPage() {
   const [items, setItems] = useState<FeedItem[]>([]);
@@ -20,9 +15,10 @@ export default function ActivityFeedPage() {
       <h1>Activity Feed</h1>
       <ul>
         {items.map((i) => (
-          <li key={i.item_id}>{i.message}</li>
+          <FeedItemCard key={i.item_id} item={i} />
         ))}
       </ul>
+      <Advertisement />
     </main>
   );
 }

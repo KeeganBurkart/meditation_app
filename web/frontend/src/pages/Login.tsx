@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/api";
+import SocialLoginButton from "../components/SocialLoginButton";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -38,6 +39,10 @@ export default function Login() {
         </label>
         <button type="submit">Login</button>
       </form>
+      <div style={{ marginTop: "1rem" }}>
+        <SocialLoginButton provider="google" label="Google" />
+        <SocialLoginButton provider="facebook" label="Facebook" />
+      </div>
     </main>
   );
 }
