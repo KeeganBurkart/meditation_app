@@ -13,6 +13,7 @@ Mindful Connect is a meditation tracking and social platform consisting of an iO
 - Sign up with email or social login providers
 
 ## Community Challenges
+
 Mindful Connect supports community meditation challenges where users can join and log their progress toward a shared goal. The helper functions in `src/mindful.py` manage challenge creation, participation, and minute tracking.
 
 ## Technology Stack
@@ -20,17 +21,20 @@ Mindful Connect supports community meditation challenges where users can join an
 The following tools and frameworks will be used for the project:
 
 ### iOS App
+
 - **Language**: Swift 5
 - **UI Framework**: SwiftUI
 - **State Management**: Combine
 
 ### Web App
+
 - **Framework**: React with TypeScript
 - **Routing**: React Router
 - **Styling**: CSS Modules or styled-components
 - The web frontend lives under `web/frontend`.
 
 ### Backend
+
 - **Language**: Python 3.10
 - **Framework**: FastAPI
 - **Database**: PostgreSQL
@@ -76,6 +80,7 @@ pytest
 ```
 
 Additional details on environment variables and deployment scripts are available in [docs/deployment.md](docs/deployment.md).
+Guidance on monitoring, error tracking, and gathering user feedback is covered in [docs/monitoring.md](docs/monitoring.md).
 
 ## Monetization
 
@@ -83,4 +88,3 @@ Mindful Connect includes a Premium tier that unlocks advanced statistics,
 unlimited friends, and private challenges. The `subscriptions` module tracks a
 user's tier so the app can gate these features. Free tier users may see small
 text advertisements served via the `ads` module.
-
