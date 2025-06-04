@@ -20,6 +20,7 @@ from src import (
     activity,
     notifications,
     subscriptions,
+    challenges,
     sessions as session_models,
     profiles,
     analytics,
@@ -36,6 +37,26 @@ from src.api_models import (
     StringValuePoint,
     LocationFrequencyResponse,
     AdResponse,
+    CustomTypeInput,
+    CustomTypeResponse,
+    BadgeResponse,
+    PrivateChallengeInput,
+    PrivateChallengeResponse,
+)
+from src.feed_models import (
+    CommentInput,
+    EncouragementInput,
+    FeedInteractionResponse,
+)
+from src.feed_models import (
+    CommentInput,
+    EncouragementInput,
+    FeedInteractionResponse,
+)
+from src.feed_models import (
+    CommentInput,
+    EncouragementInput,
+    FeedInteractionResponse,
 )
 from src.feed_models import (
     CommentInput,
@@ -261,6 +282,13 @@ def create_session(
         mood_after=info.moodAfter,
     )
     feed.log_session(current_user_id, f"{info.type} {info.duration}m")
+    cur = conn.execute(
+        "SELECT COUNT(*) FROM sessions WHERE user_id = ?",
+        (current_user_id,),
+    )
+    count = cur.fetchone()[0]
+    if count == 1:
+        challenges.award_badge(conn, current_user_id, "First Session Completed")
     return {"session_id": session_id}
 
 
@@ -566,7 +594,6 @@ async def upload_my_photo(
     )  # Assuming profiles.update_photo exists
     return {"photo_url": photo_url}
 
-
 @app.get("/users/me/custom-meditation-types", response_model=list)
 def list_custom_types(current_user_id: int = Depends(get_current_user)):
     cur = conn.execute(
@@ -590,6 +617,7 @@ def create_custom_type(
 
 
 @app.put("/users/me/custom-meditation-types/{type_id}", response_model=dict)
+
 def update_custom_type(
     type_id: int,
     data: CustomTypeInput,
@@ -632,6 +660,7 @@ def list_private_challenges(current_user_id: int = Depends(get_current_user)):
 
 
 @app.post("/users/me/private-challenges", response_model=dict)
+
 def create_private_challenge(
     data: PrivateChallengeInput, current_user_id: int = Depends(get_current_user)
 ):
@@ -647,6 +676,7 @@ def create_private_challenge(
 
 
 @app.put("/users/me/private-challenges/{challenge_id}", response_model=dict)
+
 def update_private_challenge(
     challenge_id: int,
     data: PrivateChallengeInput,

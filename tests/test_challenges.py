@@ -25,7 +25,8 @@ def test_private_challenge_and_badges():
     assert challenge_id == 1
     # Award a badge upon completion
     award_badge(conn, 1, "7 Day Streak")
-    assert get_user_badges(conn, 1) == ["7 Day Streak"]
+    badges = get_user_badges(conn, 1)
+    assert badges[0][0] == "7 Day Streak"
 
 
 # Keep all these new tests from main

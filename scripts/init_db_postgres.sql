@@ -60,6 +60,10 @@ CREATE TABLE IF NOT EXISTS challenges (
     name TEXT NOT NULL,
     created_by INTEGER NOT NULL,
     is_private BOOLEAN DEFAULT FALSE,
+    target_minutes INTEGER,
+    start_date DATE,
+    end_date DATE,
+    description TEXT,
     FOREIGN KEY(created_by) REFERENCES users(id)
 );
 

@@ -20,8 +20,17 @@ export default function MyPrivateChallenges() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    getSubscription().then((sub) => setPremium(sub?.tier === "premium"));
-    getPrivateChallenges().then(setChallenges).finally(() => setLoaded(true));
+    async function load() {
+      const sub = await getSubscription();
+      const hasPremium = sub?.tier === "premium";
+      setPremium(hasPremium);
+      if (hasPremium) {
+        const list = await getPrivateChallenges();
+        setChallenges(list);
+      }
+      setLoaded(true);
+    }
+    load();
   }, []);
 
   if (!loaded) return <p>Loading...</p>;

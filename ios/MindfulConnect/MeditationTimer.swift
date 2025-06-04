@@ -47,6 +47,8 @@ public class MeditationTimer: ObservableObject {
     private let logger: SessionLogger
     private let startDate: Date
     private var photoURL: URL?
+    public var attachedPhotoURL: URL? { photoURL }
+    private let api = APIClient()
 
     public init(duration: TimeInterval, logger: SessionLogger = SessionLogger()) {
         self.duration = duration
@@ -79,5 +81,14 @@ public class MeditationTimer: ObservableObject {
         stop()
         let session = MeditationSession(duration: duration, startDate: startDate, endDate: Date(), photoURL: photoURL)
         logger.log(session: session)
+    }
+
+    public func uploadAttachedPhoto(sessionId: Int, authToken: String) async {
+        guard let url = photoURL,
+              let data = try? Data(contentsOf: url) else { return }
+        try? await api.uploadSessionPhoto(sessionId: sessionId,
+                                          photoData: data,
+                                          filename: url.lastPathComponent,
+                                          authToken: authToken)
     }
 }
