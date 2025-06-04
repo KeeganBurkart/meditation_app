@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS moods (
 );
 
 CREATE TABLE IF NOT EXISTS custom_meditation_types (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT PRIMARY KEY,
     user_id INTEGER NOT NULL,
     type_name TEXT NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id)

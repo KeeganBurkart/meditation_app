@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import sqlite3
 from typing import Any
+from uuid import uuid4
 from pathlib import Path
 
 
@@ -43,20 +44,20 @@ def init_postgres_db(conn: Any) -> None:
 
 def add_custom_meditation_type(
     conn: sqlite3.Connection, user_id: int, type_name: str
-) -> int:
-    """Insert a custom meditation type for the given user and return its ID."""
-    cur = conn.execute(
-        "INSERT INTO custom_meditation_types (user_id, type_name) VALUES (?, ?) RETURNING id",
-        (user_id, type_name),
+) -> str:
+    """Insert a custom meditation type for the given user and return its UUID."""
+    type_id = uuid4().hex
+    conn.execute(
+        "INSERT INTO custom_meditation_types (id, user_id, type_name) VALUES (?, ?, ?)",
+        (type_id, user_id, type_name),
     )
-    type_id = cur.fetchone()[0]
     conn.commit()
     return type_id
 
 
 def get_custom_meditation_types(
     conn: sqlite3.Connection, user_id: int
-) -> list[tuple[int, str]]:
+) -> list[tuple[str, str]]:
     """Return ``(id, type_name)`` tuples for ``user_id``."""
     cur = conn.execute(
         "SELECT id, type_name FROM custom_meditation_types WHERE user_id = ?",
@@ -66,7 +67,7 @@ def get_custom_meditation_types(
 
 
 def update_custom_meditation_type(
-    conn: sqlite3.Connection, user_id: int, type_id: int, new_name: str
+    conn: sqlite3.Connection, user_id: int, type_id: str, new_name: str
 ) -> None:
     """Update a user's custom meditation type name."""
     conn.execute(
@@ -77,7 +78,7 @@ def update_custom_meditation_type(
 
 
 def delete_custom_meditation_type(
-    conn: sqlite3.Connection, user_id: int, type_id: int
+    conn: sqlite3.Connection, user_id: int, type_id: str
 ) -> None:
     """Delete a custom meditation type by ID for a user."""
     conn.execute(

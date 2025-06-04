@@ -39,6 +39,7 @@ from src.api_models import (
     AdResponse,
     CustomTypeInput,
     CustomTypeResponse,
+    ProfileVisibilityInput,
     BadgeResponse,
     PrivateChallengeInput,
     PrivateChallengeResponse,
@@ -209,14 +210,6 @@ class NotificationInput(BaseModel):
 
 class BioUpdate(BaseModel):
     bio: str
-
-
-class ProfileVisibilityInput(BaseModel):
-    is_public: bool
-
-
-class CustomTypeInput(BaseModel):
-    type_name: str
 
 
 class PrivateChallengeInput(BaseModel):
@@ -611,6 +604,15 @@ async def upload_my_photo(
     return {"photo_url": photo_url}
 
 
+@app.put("/users/me/profile-visibility", response_model=dict)
+def update_profile_visibility(
+    data: ProfileVisibilityInput, current_user_id: int = Depends(get_current_user)
+):
+    """Update whether the authenticated user's profile is public."""
+    profiles.update_visibility(conn, current_user_id, data.is_public)
+    return {"status": "ok"}
+
+
 @app.get("/users/{user_id}/profile", response_model=PublicProfileResponse)
 def get_user_profile(
     user_id: int, requester_id: int | None = Depends(get_optional_user)
@@ -646,11 +648,11 @@ def list_custom_types(current_user_id: int = Depends(get_current_user)):
 def create_custom_type(
     data: CustomTypeInput, current_user_id: int = Depends(get_current_user)
 ):
-    cur = conn.execute(
-        "INSERT INTO custom_meditation_types (user_id, type_name) VALUES (?, ?) RETURNING id",
-        (current_user_id, data.type_name),
+    new_id = uuid4().hex
+    conn.execute(
+        "INSERT INTO custom_meditation_types (id, user_id, type_name) VALUES (?, ?, ?)",
+        (new_id, current_user_id, data.type_name),
     )
-    new_id = cur.fetchone()[0]
     conn.commit()
     return {"id": new_id, "type_name": data.type_name}
 
@@ -658,7 +660,7 @@ def create_custom_type(
 @app.put("/users/me/custom-meditation-types/{type_id}", response_model=dict)
 
 def update_custom_type(
-    type_id: int,
+    type_id: str,
     data: CustomTypeInput,
     current_user_id: int = Depends(get_current_user),
 ):
@@ -671,7 +673,7 @@ def update_custom_type(
 
 
 @app.delete("/users/me/custom-meditation-types/{type_id}", response_model=dict)
-def delete_custom_type(type_id: int, current_user_id: int = Depends(get_current_user)):
+def delete_custom_type(type_id: str, current_user_id: int = Depends(get_current_user)):
     conn.execute(
         "DELETE FROM custom_meditation_types WHERE id = ? AND user_id = ?",
         (type_id, current_user_id),
