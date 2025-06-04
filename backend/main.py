@@ -244,7 +244,6 @@ def create_session(
         mood_before=info.moodBefore,
         mood_after=info.moodAfter,
     )
-    # Log the session in the activity feed
     feed.log_session(current_user_id, f"{info.type} {info.duration}m")
     return {"session_id": session_id}
 
@@ -275,7 +274,7 @@ def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
         "sessions": count,
         "streak": streak,
     }
-  
+
 @app.get("/feed", response_model=list)  # Changed path to /feed, user_id from token
 def get_user_feed(current_user_id: int = Depends(get_current_user)):
     # This is the implementation from the third provided diff for /feed

@@ -1,0 +1,18 @@
+[
+    {
+        "id": 1,
+        "userId": 2,
+        "itemType": "comment",
+        "message": "Great job!",
+        "timestamp": "2023-07-01T12:00:00Z",
+        "targetUserId": 1
+    },
+    {
+        "id": 2,
+        "userId": 3,
+        "itemType": "encouragement",
+        "message": "Keep it up!",
+        "timestamp": "2023-07-02T15:30:00Z",
+        "targetUserId": 1
+    }
+]
