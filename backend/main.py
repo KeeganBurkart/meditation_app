@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import os
 import sqlite3
-from datetime import date, time
-from fastapi import FastAPI, HTTPException, Request
+  
+from datetime import time
+from fastapi import FastAPI, HTTPException, Request, Depends, Header
+from jose import JWTError, jwt
 import logging
 from pydantic import BaseModel
 
@@ -12,6 +14,9 @@ from src import monitoring
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mindful")
+
+SECRET_KEY = os.getenv("JWT_SECRET", "secret")
+ALGORITHM = "HS256"
 
 app = FastAPI()
 
@@ -37,7 +42,22 @@ async def log_requests(request: Request, call_next):
     return response
 
 feed = activity.ActivityFeed()
-notify_manager = notifications.NotificationManager()
+notify_manager = notifications.NotificationManager(conn)
+
+
+def get_current_user(authorization: str = Header(None)) -> int:
+    """Return the authenticated user's ID from a Bearer token."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing token")
+    token = authorization.split(" ", 1)[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("user_id")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return int(user_id)
 
 class SignUp(BaseModel):
     email: str
@@ -49,7 +69,6 @@ class Login(BaseModel):
     password: str
 
 class SessionInput(BaseModel):
-    user_id: int
     date: str
     time: str | None = None
     duration: int
@@ -60,13 +79,12 @@ class SessionInput(BaseModel):
     moodAfter: int | None = None
 
 class FollowInput(BaseModel):
-    follower_id: int
     followed_id: int
 
 class NotificationInput(BaseModel):
-    user_id: int
     reminder_time: str
     message: str
+    enabled: bool = True
 
 @app.post('/auth/signup')
 def signup(data: SignUp):
@@ -81,13 +99,14 @@ def login(data: Login):
     if not row or auth.hash_password(data.password) != row[1]:
         raise HTTPException(status_code=401, detail='Invalid credentials')
     monitoring.log_event("login", {"user": row[0]})
-    return {"user_id": row[0]}
+    token = jwt.encode({"user_id": row[0]}, SECRET_KEY, algorithm=ALGORITHM)
+    return {"access_token": token}
 
 @app.post('/sessions')
-def create_session(info: SessionInput):
+def create_session(info: SessionInput, user_id: int = Depends(get_current_user)):
     session_id = mindful.log_session(
         conn,
-        info.user_id,
+        user_id,
         info.duration,
         info.type,
         info.date,
@@ -97,11 +116,13 @@ def create_session(info: SessionInput):
         mood_before=info.moodBefore,
         mood_after=info.moodAfter,
     )
-    feed.log_session(info.user_id, f"{info.type} {info.duration}m")
+    feed.log_session(user_id, f"{info.type} {info.duration}m")
     return {"session_id": session_id}
 
 @app.get('/dashboard/{user_id}')
-def get_dashboard(user_id: int):
+def get_dashboard(user_id: int, current_user: int = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail='Forbidden')
     cur = conn.execute(
         'SELECT duration, session_type, session_date, session_time, location FROM sessions WHERE user_id = ?',
         (user_id,)
@@ -112,7 +133,7 @@ def get_dashboard(user_id: int):
             r[0],
             r[1],
             time.fromisoformat(r[3]) if r[3] else time(0, 0),
-            session_date=date.fromisoformat(r[2]),
+            session_date=date.fromisoformat(r[2]) if isinstance(r[2], str) else r[2],
             location=r[4] or ''
         )
         for r in records
@@ -123,34 +144,37 @@ def get_dashboard(user_id: int):
     return {"total": total, "sessions": count, "streak": streak}
 
 @app.get('/feed/{user_id}')
-def get_feed(user_id: int):
+def get_feed(user_id: int, current_user: int = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail='Forbidden')
     items = feed.get_feed(user_id)
     return [item.__dict__ for item in items]
 
 @app.post('/follow')
-def follow(data: FollowInput):
-    relationships.follow_user(conn, data.follower_id, data.followed_id)
+def follow(data: FollowInput, user_id: int = Depends(get_current_user)):
+    relationships.follow_user(conn, user_id, data.followed_id)
     return {"status": "ok"}
 
 @app.post('/unfollow')
-def unfollow(data: FollowInput):
-    relationships.unfollow_user(conn, data.follower_id, data.followed_id)
+def unfollow(data: FollowInput, user_id: int = Depends(get_current_user)):
+    relationships.unfollow_user(conn, user_id, data.followed_id)
     return {"status": "ok"}
 
 @app.post('/notifications')
-def add_notification(data: NotificationInput):
+def add_notification(data: NotificationInput, user_id: int = Depends(get_current_user)):
     t = time.fromisoformat(data.reminder_time)
-    note_id = notify_manager.add_notification(data.user_id, t, data.message)
+    note_id = notify_manager.add_notification(user_id, t, data.message)
     return {"notification_id": note_id}
 
 @app.get('/notifications/{user_id}')
-def list_notifications(user_id: int):
+def list_notifications(user_id: int, current_user: int = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail='Forbidden')
     notes = notify_manager.get_notifications(user_id)
     return [n.__dict__ for n in notes]
 
 
 class JoinChallengeInput(BaseModel):
-    user_id: int
     challenge_id: int
 
 
@@ -173,13 +197,15 @@ def list_challenges():
 
 
 @app.post('/challenges/join')
-def join_challenge(data: JoinChallengeInput):
-    mindful.join_challenge(conn, data.user_id, data.challenge_id)
+def join_challenge(data: JoinChallengeInput, user_id: int = Depends(get_current_user)):
+    mindful.join_challenge(conn, user_id, data.challenge_id)
     return {"status": "ok"}
 
 
 @app.get('/moods/{user_id}')
-def get_moods(user_id: int):
+def get_moods(user_id: int, current_user: int = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail='Forbidden')
     moods = mindful.get_user_moods(conn, user_id)
     return [
         {"before": m[0], "after": m[1]} for m in moods
@@ -191,12 +217,16 @@ class SubscriptionUpdate(BaseModel):
 
 
 @app.get('/subscriptions/{user_id}')
-def get_subscription(user_id: int):
+def get_subscription(user_id: int, current_user: int = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail='Forbidden')
     tier = subscriptions.get_user_tier(conn, user_id)
     return {"tier": tier}
 
 
 @app.post('/subscriptions/{user_id}')
-def update_subscription(user_id: int, data: SubscriptionUpdate):
+def update_subscription(user_id: int, data: SubscriptionUpdate, current_user: int = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail='Forbidden')
     subscriptions.subscribe_user(conn, user_id, data.tier, '2023-01-01')
     return {"status": "ok"}
