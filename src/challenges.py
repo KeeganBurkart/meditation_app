@@ -13,11 +13,24 @@ def create_challenge(
     created_by: int,
     *,
     is_private: bool = False,
+    target_minutes: int | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    description: str | None = None,
 ) -> int:
     """Insert a challenge and return its ID."""
     cur = conn.execute(
-        "INSERT INTO challenges (name, created_by, is_private) VALUES (?, ?, ?) RETURNING id",
-        (name, created_by, int(is_private)),
+        "INSERT INTO challenges (name, created_by, is_private, target_minutes, start_date, end_date, description)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id",
+        (
+            name,
+            created_by,
+            int(is_private),
+            target_minutes,
+            start_date,
+            end_date,
+            description,
+        ),
     )
     challenge_id = cur.fetchone()[0]
     conn.commit()
@@ -33,13 +46,59 @@ def award_badge(conn: sqlite3.Connection, user_id: int, badge_name: str) -> None
     conn.commit()
 
 
-def get_user_badges(conn: sqlite3.Connection, user_id: int) -> list[str]:
-    """Return a list of badge names for ``user_id``."""
+def get_user_badges(conn: sqlite3.Connection, user_id: int) -> list[tuple[str, str]]:
+    """Return ``(badge_name, awarded_at)`` tuples for ``user_id``."""
     cur = conn.execute(
-        "SELECT badge_name FROM badges WHERE user_id = ? ORDER BY awarded_at",
+        "SELECT badge_name, awarded_at FROM badges WHERE user_id = ? ORDER BY awarded_at",
         (user_id,),
     )
-    return [row[0] for row in cur.fetchall()]
+    return [(row[0], row[1]) for row in cur.fetchall()]
+
+
+def get_private_challenges(conn: sqlite3.Connection, user_id: int) -> list[tuple]:
+    """Return all private challenges created by ``user_id``."""
+    cur = conn.execute(
+        "SELECT id, name, target_minutes, start_date, end_date, description FROM challenges"
+        " WHERE created_by = ? AND is_private = 1",
+        (user_id,),
+    )
+    return [tuple(row) for row in cur.fetchall()]
+
+
+def update_private_challenge(
+    conn: sqlite3.Connection,
+    user_id: int,
+    challenge_id: int,
+    name: str,
+    target_minutes: int,
+    start_date: str,
+    end_date: str,
+    description: str | None = None,
+) -> None:
+    """Update a private challenge owned by ``user_id``."""
+    conn.execute(
+        "UPDATE challenges SET name = ?, target_minutes = ?, start_date = ?, end_date = ?, description = ?"
+        " WHERE id = ? AND created_by = ? AND is_private = 1",
+        (
+            name,
+            target_minutes,
+            start_date,
+            end_date,
+            description,
+            challenge_id,
+            user_id,
+        ),
+    )
+    conn.commit()
+
+
+def delete_private_challenge(conn: sqlite3.Connection, user_id: int, challenge_id: int) -> None:
+    """Delete a private challenge owned by ``user_id``."""
+    conn.execute(
+        "DELETE FROM challenges WHERE id = ? AND created_by = ? AND is_private = 1",
+        (challenge_id, user_id),
+    )
+    conn.commit()
 
 
 def current_streak(dates: Iterable[date]) -> int:

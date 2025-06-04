@@ -28,7 +28,6 @@ public struct Ad: Codable {
     public let id: Int
     public let text: String
 }
-
 public struct SocialLoginRequest: Codable {
     public let provider: String
     public let token: String
@@ -68,8 +67,6 @@ public struct UpdateMeditationTypeRequest: Codable {
 
 }
 
-// MARK: - Analytics Models
-
 public struct DateValuePoint: Codable {
     public let dateStr: String
     public let value: Int
@@ -104,4 +101,15 @@ public struct StringValuePoint: Codable {
 
 public struct LocationFrequencyResponse: Codable {
     public let points: [StringValuePoint]
+
+public struct ChallengeInput: Codable {
+    public let name: String
+    public let targetMinutes: Int
+    public let startDate: String
+    public let endDate: String
+}
+
+public struct Subscription: Codable {
+    public let tier: String
+
 }
