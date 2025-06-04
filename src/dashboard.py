@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Iterable
 
-from sessions import MeditationSession
+from .sessions import MeditationSession
 
 
 def calculate_total_time(sessions: Iterable[MeditationSession]) -> int:

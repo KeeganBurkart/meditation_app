@@ -1,11 +1,7 @@
-import sys
-from pathlib import Path
 from datetime import date, time
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
-
-import analytics
-from sessions import MeditationSession
+from src import analytics
+from src.sessions import MeditationSession
 
 
 def sample_sessions():

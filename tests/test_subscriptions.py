@@ -1,11 +1,7 @@
-import sys
-from pathlib import Path
 import sqlite3
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
-
-import mindful
-from subscriptions import subscribe_user, get_user_tier, is_premium, has_feature_access
+from src import mindful
+from src.subscriptions import subscribe_user, get_user_tier, is_premium, has_feature_access
 
 
 def setup_db():

@@ -1,11 +1,6 @@
-import sys
-from pathlib import Path
 import sqlite3
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
-
-import mindful
-import auth
+from src import mindful, auth
 
 
 def test_register_user():

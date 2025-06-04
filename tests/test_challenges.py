@@ -1,13 +1,8 @@
-import sys
-from pathlib import Path
 import sqlite3
 from datetime import date # Keep from main
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
-
-import mindful
-# Combine imports from challenges
-from challenges import (
+from src import mindful
+from src.challenges import (
     create_challenge,
     award_badge,
     get_user_badges,
