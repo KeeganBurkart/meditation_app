@@ -348,3 +348,77 @@ export async function getUserProfile(
   if (!res.ok) return null;
   return res.json();
 }
+
+// ----------------------------- Analytics -----------------------------
+
+export interface DateValuePoint {
+  date_str: string;
+  value: number;
+}
+
+export interface ConsistencyDataResponse {
+  points: DateValuePoint[];
+}
+
+export interface MoodCorrelationPoint {
+  mood_before: number;
+  mood_after: number;
+}
+
+export interface MoodCorrelationResponse {
+  points: MoodCorrelationPoint[];
+}
+
+export interface HourValuePoint {
+  hour: number;
+  value: number;
+}
+
+export interface TimeOfDayResponse {
+  points: HourValuePoint[];
+}
+
+export interface StringValuePoint {
+  name: string;
+  value: number;
+}
+
+export interface LocationFrequencyResponse {
+  points: StringValuePoint[];
+}
+
+export async function getConsistencyData(): Promise<DateValuePoint[]> {
+  const res = await fetch(`${API_URL}/analytics/me/consistency`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  const data = (await res.json()) as ConsistencyDataResponse;
+  return data.points;
+}
+
+export async function getMoodCorrelationData(): Promise<MoodCorrelationPoint[]> {
+  const res = await fetch(`${API_URL}/analytics/me/mood-correlation`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  const data = (await res.json()) as MoodCorrelationResponse;
+  return data.points;
+}
+
+export async function getTimeOfDayData(): Promise<HourValuePoint[]> {
+  const res = await fetch(`${API_URL}/analytics/me/time-of-day`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  const data = (await res.json()) as TimeOfDayResponse;
+  return data.points;
+}
+
+export async function getLocationFrequencyData(): Promise<StringValuePoint[]> {
+  const res = await fetch(`${API_URL}/analytics/me/location-frequency`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  const data = (await res.json()) as LocationFrequencyResponse;
+  return data.points;
+}

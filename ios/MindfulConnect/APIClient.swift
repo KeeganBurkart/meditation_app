@@ -130,6 +130,24 @@ public struct APIClient {
             .eraseToAnyPublisher()
     }
 
+
+    // MARK: - Analytics
+
+    public func fetchConsistency(authToken: String) -> AnyPublisher<ConsistencyDataResponse, Error> {
+        request("analytics/me/consistency", authToken: authToken)
+    }
+
+    public func fetchMoodCorrelation(authToken: String) -> AnyPublisher<MoodCorrelationResponse, Error> {
+        request("analytics/me/mood-correlation", authToken: authToken)
+    }
+
+    public func fetchTimeOfDay(authToken: String) -> AnyPublisher<TimeOfDayResponse, Error> {
+        request("analytics/me/time-of-day", authToken: authToken)
+    }
+
+    public func fetchLocationFrequency(authToken: String) -> AnyPublisher<LocationFrequencyResponse, Error> {
+        request("analytics/me/location-frequency", authToken: authToken)
+
     // MARK: - Activity Feed
     public func fetchFeed(authToken: String) async throws -> [FeedItem] {
         var request = URLRequest(url: baseURL.appendingPathComponent("feed"))
@@ -222,6 +240,7 @@ public struct APIClient {
         request.setValue(filename, forHTTPHeaderField: "X-Filename")
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         _ = try await session.data(for: request)
+
     }
 }
 
