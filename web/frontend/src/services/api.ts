@@ -1,5 +1,32 @@
 const API_URL = "http://localhost:8000";
 
+async function fetchJson<T>(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<T | null> {
+  try {
+    const res = await fetch(input, init);
+    if (!res.ok) throw new Error(`Request failed with ${res.status}`);
+    return (await res.json()) as T;
+  } catch (err) {
+    console.error("API error", err);
+    return null;
+  }
+}
+
+async function fetchOk(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<boolean> {
+  try {
+    const res = await fetch(input, init);
+    return res.ok;
+  } catch (err) {
+    console.error("API error", err);
+    return false;
+  }
+}
+
 function getAuthHeader() {
   // Access tokens are stored in ``localStorage`` after login. When present we
   // send them as a ``Bearer`` token so protected endpoints authenticate the
@@ -13,26 +40,23 @@ export async function signup(
   password: string,
   displayName: string,
 ) {
-  const res = await fetch(`${API_URL}/auth/signup`, {
+  return fetchOk(`${API_URL}/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, display_name: displayName }),
   });
-  return res.ok;
 }
 
 export async function login(
   email: string,
   password: string,
 ): Promise<string | null> {
-  const res = await fetch(`${API_URL}/auth/login`, {
+  const res = await fetchJson<{ access_token: string }>(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.access_token as string;
+  return res ? res.access_token : null;
 }
 
 export interface SessionData {
@@ -65,61 +89,51 @@ export interface Ad {
   text: string;
 }
 
-export async function logSession(data: SessionData) {
-  await fetch(`${API_URL}/sessions`, {
+export async function logSession(
+  data: SessionData,
+): Promise<number | null> {
+  const res = await fetchJson<{ session_id: number }>(`${API_URL}/sessions`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify(data),
   });
-  if (!res.ok) return null;
-  const json = await res.json();
-  return json.session_id as number;
+  return res ? res.session_id : null;
 }
 
 export async function getDashboard() {
-  const res = await fetch(`${API_URL}/dashboard/me`, {
+  return fetchJson(`${API_URL}/dashboard/me`, {
     headers: getAuthHeader(),
   });
-  if (!res.ok) return null;
-  return res.json();
 }
 
-export async function getFeed() {
-  const res = await fetch(`${API_URL}/feed`, { headers: getAuthHeader() });
-  if (!res.ok) return [];
-  return res.json();
+export async function getFeed(): Promise<any[] | null> {
+  return fetchJson<any[]>(`${API_URL}/feed`, { headers: getAuthHeader() });
 }
 
-export async function getCommunityChallenges() {
-  const res = await fetch(`${API_URL}/challenges`);
-  if (!res.ok) return [];
-  return res.json();
+export async function getCommunityChallenges(): Promise<any[] | null> {
+  return fetchJson<any[]>(`${API_URL}/challenges`);
 }
 
 export async function joinCommunityChallenge(challengeId: number) {
-  await fetch(`${API_URL}/challenges/join`, {
+  await fetchOk(`${API_URL}/challenges/join`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ challenge_id: challengeId }),
   });
 }
 
-export async function getMoodHistory() {
-  const res = await fetch(`${API_URL}/moods`, { headers: getAuthHeader() });
-  if (!res.ok) return [];
-  return res.json();
+export async function getMoodHistory(): Promise<any[] | null> {
+  return fetchJson<any[]>(`${API_URL}/moods`, { headers: getAuthHeader() });
 }
 
 export async function getSubscription() {
-  const res = await fetch(`${API_URL}/subscriptions/me`, {
+  return fetchJson(`${API_URL}/subscriptions/me`, {
     headers: getAuthHeader(),
   });
-  if (!res.ok) return null;
-  return res.json();
 }
 
 export async function updateSubscription(tier: string) {
-  await fetch(`${API_URL}/subscriptions/me`, {
+  await fetchOk(`${API_URL}/subscriptions/me`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ tier }),
@@ -127,23 +141,21 @@ export async function updateSubscription(tier: string) {
 }
 
 export async function addNotification(time: string, message: string) {
-  await fetch(`${API_URL}/notifications`, {
+  await fetchOk(`${API_URL}/notifications`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ reminder_time: time, message }),
   });
 }
 
-export async function getNotifications() {
-  const res = await fetch(`${API_URL}/notifications`, {
+export async function getNotifications(): Promise<any[] | null> {
+  return fetchJson<any[]>(`${API_URL}/notifications`, {
     headers: getAuthHeader(),
   });
-  if (!res.ok) return [];
-  return res.json();
 }
 
 export async function updateBio(bio: string) {
-  await fetch(`${API_URL}/users/me/bio`, {
+  await fetchOk(`${API_URL}/users/me/bio`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ bio }),
@@ -151,45 +163,38 @@ export async function updateBio(bio: string) {
 }
 
 export async function uploadPhoto(file: File) {
-  const res = await fetch(`${API_URL}/users/me/photo`, {
+  return fetchJson(`${API_URL}/users/me/photo`, {
     method: "POST",
     headers: { "X-Filename": file.name, ...getAuthHeader() },
     body: file,
   });
-  if (!res.ok) return null;
-  return res.json();
 }
 
 export async function addFeedComment(
   feedItemId: number,
   text: string,
 ): Promise<FeedComment | null> {
-  const res = await fetch(`${API_URL}/feed/${feedItemId}/comment`, {
+  return fetchJson<FeedComment>(`${API_URL}/feed/${feedItemId}/comment`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ text }),
   });
-  if (!res.ok) return null;
-  return res.json() as Promise<FeedComment>;
 }
 
 export async function addFeedEncouragement(
   feedItemId: number,
   text: string,
 ): Promise<FeedEncouragement | null> {
-  const res = await fetch(`${API_URL}/feed/${feedItemId}/encourage`, {
+  return fetchJson<FeedEncouragement>(`${API_URL}/feed/${feedItemId}/encourage`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ text }),
   });
-  if (!res.ok) return null;
-  return res.json() as Promise<FeedEncouragement>;
 }
 
-export async function getRandomAd(): Promise<Ad | null> {
-  const res = await fetch(`${API_URL}/ads/random`, { headers: getAuthHeader() });
-  if (!res.ok) return null;
-  return res.json() as Promise<Ad>;
+  return fetchJson<Ad>(`${API_URL}/ads/random`, { headers: getAuthHeader() });
+}
+
   
 // ---------------------- Custom Meditation Types ----------------------
 
@@ -201,28 +206,28 @@ export interface CustomMeditationType {
 export async function createCustomType(
   typeName: string,
 ): Promise<CustomMeditationType | null> {
-  const res = await fetch(`${API_URL}/users/me/custom-meditation-types`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...getAuthHeader() },
-    body: JSON.stringify({ type_name: typeName }),
-  });
-  if (!res.ok) return null;
-  return res.json();
+  return fetchJson<CustomMeditationType>(
+    `${API_URL}/users/me/custom-meditation-types`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...getAuthHeader() },
+      body: JSON.stringify({ type_name: typeName }),
+    },
+  );
 }
 
-export async function getCustomTypes(): Promise<CustomMeditationType[]> {
-  const res = await fetch(`${API_URL}/users/me/custom-meditation-types`, {
-    headers: getAuthHeader(),
-  });
-  if (!res.ok) return [];
-  return res.json();
+export async function getCustomTypes(): Promise<CustomMeditationType[] | null> {
+  return fetchJson<CustomMeditationType[]>(
+    `${API_URL}/users/me/custom-meditation-types`,
+    { headers: getAuthHeader() },
+  );
 }
 
 export async function updateCustomType(
   id: number,
   typeName: string,
 ): Promise<void> {
-  await fetch(`${API_URL}/users/me/custom-meditation-types/${id}`, {
+  await fetchOk(`${API_URL}/users/me/custom-meditation-types/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify({ type_name: typeName }),
@@ -230,7 +235,7 @@ export async function updateCustomType(
 }
 
 export async function deleteCustomType(id: number): Promise<void> {
-  await fetch(`${API_URL}/users/me/custom-meditation-types/${id}`, {
+  await fetchOk(`${API_URL}/users/me/custom-meditation-types/${id}`, {
     method: "DELETE",
     headers: getAuthHeader(),
   });
@@ -242,12 +247,10 @@ export interface Badge {
   name: string;
 }
 
-export async function getBadges(): Promise<Badge[]> {
-  const res = await fetch(`${API_URL}/users/me/badges`, {
+export async function getBadges(): Promise<Badge[] | null> {
+  return fetchJson<Badge[]>(`${API_URL}/users/me/badges`, {
     headers: getAuthHeader(),
   });
-  if (!res.ok) return [];
-  return res.json();
 }
 
 // --------------------------- Private Challenges ---------------------------
@@ -270,28 +273,24 @@ export interface ChallengeInput {
 export async function createPrivateChallenge(
   data: ChallengeInput,
 ): Promise<PrivateChallenge | null> {
-  const res = await fetch(`${API_URL}/users/me/private-challenges`, {
+  return fetchJson<PrivateChallenge>(`${API_URL}/users/me/private-challenges`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify(data),
   });
-  if (!res.ok) return null;
-  return res.json();
 }
 
-export async function getPrivateChallenges(): Promise<PrivateChallenge[]> {
-  const res = await fetch(`${API_URL}/users/me/private-challenges`, {
+export async function getPrivateChallenges(): Promise<PrivateChallenge[] | null> {
+  return fetchJson<PrivateChallenge[]>(`${API_URL}/users/me/private-challenges`, {
     headers: getAuthHeader(),
   });
-  if (!res.ok) return [];
-  return res.json();
 }
 
 export async function updatePrivateChallenge(
   id: number,
   data: ChallengeInput,
 ): Promise<void> {
-  await fetch(`${API_URL}/users/me/private-challenges/${id}`, {
+  await fetchOk(`${API_URL}/users/me/private-challenges/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify(data),
@@ -299,7 +298,7 @@ export async function updatePrivateChallenge(
 }
 
 export async function deletePrivateChallenge(id: number): Promise<void> {
-  await fetch(`${API_URL}/users/me/private-challenges/${id}`, {
+  await fetchOk(`${API_URL}/users/me/private-challenges/${id}`, {
     method: "DELETE",
     headers: getAuthHeader(),
   });

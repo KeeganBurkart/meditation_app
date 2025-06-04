@@ -11,16 +11,26 @@ export default function NotificationPreferences() {
   const [time, setTime] = useState("07:00");
   const [message, setMessage] = useState("Meditate");
   const [notes, setNotes] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getNotifications().then(setNotes);
+    getNotifications()
+      .then((data) => {
+        if (data) setNotes(data as Notification[]);
+        else setError("Failed to load notifications");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     await addNotification(time, message);
-    getNotifications().then(setNotes);
+    getNotifications().then((data) => data && setNotes(data as Notification[]));
   }
+
+  if (loading) return <section>Loading...</section>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <section>

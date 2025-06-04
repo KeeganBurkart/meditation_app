@@ -7,11 +7,18 @@ export default function Dashboard() {
     sessions: number;
     streak: number;
   } | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getDashboard().then(setStats);
+    getDashboard()
+      .then((data) => {
+        if (data) setStats(data as any);
+        else setError("Failed to load dashboard");
+      })
+      .catch(() => setError("Failed to load dashboard"));
   }, []);
 
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!stats) return <p>Loading...</p>;
 
   return (

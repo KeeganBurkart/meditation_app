@@ -5,10 +5,20 @@ import Advertisement from "../components/Advertisement";
 
 export default function ActivityFeedPage() {
   const [items, setItems] = useState<FeedItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getFeed().then(setItems);
+    getFeed()
+      .then((data) => {
+        if (data) setItems(data as FeedItem[]);
+        else setError("Failed to load feed");
+      })
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <main>
