@@ -50,3 +50,11 @@ def update_photo(conn: sqlite3.Connection, user_id: int, photo_url: str) -> None
     """Persist a new profile photo path for ``user_id``."""
     conn.execute("UPDATE users SET photo_url = ? WHERE id = ?", (photo_url, user_id))
     conn.commit()
+
+def update_visibility(conn: sqlite3.Connection, user_id: int, is_public: bool) -> None:
+    """Update profile visibility flag for a user."""
+    conn.execute(
+        "UPDATE users SET is_public = ? WHERE id = ?",
+        (int(is_public), user_id),
+    )
+    conn.commit()
