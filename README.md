@@ -64,6 +64,7 @@ Install the backend Python dependencies before running the API or tests:
 
 ```bash
 python -m pip install -r requirements.txt
+# passlib is required for password hashing
 ```
 
 With the requirements installed, the test suite can be executed using:
