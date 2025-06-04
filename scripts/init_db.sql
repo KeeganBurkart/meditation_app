@@ -108,6 +108,15 @@ CREATE TABLE IF NOT EXISTS challenge_progress (
     FOREIGN KEY(challenge_id) REFERENCES community_challenges(id)
 );
 
+-- User configurable notification reminders
+CREATE TABLE IF NOT EXISTS user_notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    reminder_time DATETIME NOT NULL,
+    message TEXT,
+    is_enabled INTEGER DEFAULT 1,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+
 -- Social activity feed items
 CREATE TABLE IF NOT EXISTS activity_feed (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

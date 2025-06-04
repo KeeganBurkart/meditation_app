@@ -36,8 +36,8 @@ async def log_requests(request: Request, call_next):
     logger.info("Completed %s", response.status_code)
     return response
 
-feed = activity.ActivityFeed(conn)
-notify_manager = notifications.NotificationManager()
+feed = activity.ActivityFeed()
+notify_manager = notifications.NotificationManager(conn)
 
 class SignUp(BaseModel):
     email: str
@@ -67,6 +67,7 @@ class NotificationInput(BaseModel):
     user_id: int
     reminder_time: str
     message: str
+    enabled: bool = True
 
 @app.post('/auth/signup')
 def signup(data: SignUp):
@@ -140,7 +141,9 @@ def unfollow(data: FollowInput):
 @app.post('/notifications')
 def add_notification(data: NotificationInput):
     t = time.fromisoformat(data.reminder_time)
-    note_id = notify_manager.add_notification(data.user_id, t, data.message)
+    note_id = notify_manager.add_notification(
+        data.user_id, t, data.message, enabled=data.enabled
+    )
     return {"notification_id": note_id}
 
 @app.get('/notifications/{user_id}')
