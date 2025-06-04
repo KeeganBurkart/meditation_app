@@ -14,6 +14,7 @@ import CustomTypes from "./pages/CustomTypes";
 import BadgesPage from "./pages/BadgesPage";
 import MyPrivateChallenges from "./pages/MyPrivateChallenges";
 import UserProfile from "./pages/UserProfile";
+import Analytics from "./pages/Analytics";
 import "./App.css";
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/custom-types" element={<CustomTypes />} />
         <Route path="/badges" element={<BadgesPage />} />
         <Route path="/my-challenges" element={<MyPrivateChallenges />} />
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="/profile" element={<EditProfile />} />
         <Route path="/profile/:id" element={<UserProfile />} />
         <Route path="*" element={<Navigate to="/login" />} />

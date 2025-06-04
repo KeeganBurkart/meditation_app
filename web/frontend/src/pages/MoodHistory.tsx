@@ -8,10 +8,20 @@ interface Mood {
 
 export default function MoodHistory() {
   const [history, setHistory] = useState<Mood[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getMoodHistory().then(setHistory);
+    getMoodHistory()
+      .then((data) => {
+        if (data) setHistory(data as Mood[]);
+        else setError("Failed to load mood history");
+      })
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <main>

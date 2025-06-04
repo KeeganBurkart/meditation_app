@@ -9,9 +9,16 @@ import {
 export default function CustomTypes() {
   const [types, setTypes] = useState<CustomMeditationType[]>([]);
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getCustomTypes().then(setTypes);
+    getCustomTypes()
+      .then((data) => {
+        if (data) setTypes(data);
+        else setError("Failed to load types");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   async function addType(e: React.FormEvent) {
@@ -26,6 +33,9 @@ export default function CustomTypes() {
     await deleteCustomType(id);
     setTypes((prev) => prev.filter((t) => t.id !== id));
   }
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <main>

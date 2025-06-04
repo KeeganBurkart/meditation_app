@@ -3,10 +3,20 @@ import { getBadges, Badge } from "../services/api";
 
 export default function BadgesList() {
   const [badges, setBadges] = useState<Badge[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getBadges().then(setBadges);
+    getBadges()
+      .then((data) => {
+        if (data) setBadges(data);
+        else setError("Failed to load badges");
+      })
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <ul>

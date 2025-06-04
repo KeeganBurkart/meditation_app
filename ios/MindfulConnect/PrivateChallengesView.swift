@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PrivateChallengesView: View {
-    let isPremium: Bool
+    @EnvironmentObject var viewModel: AppViewModel
     @State private var challenges: [Challenge] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -48,6 +48,6 @@ struct PrivateChallengesView: View {
 }
 
 #Preview {
-    PrivateChallengesView(isPremium: true)
+    PrivateChallengesView()
 }
 

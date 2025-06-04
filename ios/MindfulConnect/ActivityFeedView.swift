@@ -1,11 +1,14 @@
 import SwiftUI
 
 struct ActivityFeedView: View {
+    @EnvironmentObject var viewModel: AppViewModel
     @State private var feedItems: [FeedItem] = []
     @State private var newMessage: String = ""
     @State private var targetUserId: Int = 0
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var targetItemId: Int = 0
+    private let api = APIClient()
 
     var body: some View {
         VStack {

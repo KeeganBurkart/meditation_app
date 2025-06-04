@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import ActivityFeedPage from "./ActivityFeed";
+import * as api from "../services/api";
 
 const addComment = vi.fn();
 const addEnc = vi.fn();
@@ -55,5 +56,11 @@ describe("ActivityFeed page", () => {
     fireEvent.click(screen.getByText("Comment"));
     expect(addComment).toHaveBeenCalled();
     expect(await screen.findByText("Buy now")).toBeInTheDocument();
+  });
+
+  it("handles load failure", async () => {
+    vi.spyOn(api, "getFeed").mockResolvedValueOnce(null as any);
+    render(<ActivityFeedPage />);
+    expect(await screen.findByText(/Failed to load feed/)).toBeInTheDocument();
   });
 });

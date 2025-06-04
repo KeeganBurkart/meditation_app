@@ -10,9 +10,9 @@ public class AppViewModel: ObservableObject {
     @Published public var errorMessage: String?
     private var cancellables = Set<AnyCancellable>()
 
-    private let api: MockAPIClient
+    private let api: APIClient
 
-    public init(api: MockAPIClient = MockAPIClient()) {
+    public init(api: APIClient = APIClient()) {
         self.api = api
     }
 
