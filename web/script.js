@@ -2,6 +2,8 @@ let timer;
 let remainingSeconds = 0;
 
 const durationInput = document.getElementById('duration');
+const moodBeforeInput = document.getElementById('moodBefore');
+const moodAfterInput = document.getElementById('moodAfter');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const display = document.getElementById('display');
@@ -40,7 +42,9 @@ function finishSession() {
     const session = {
         duration: parseInt(durationInput.value, 10) * 60,
         start: Date.now() - (parseInt(durationInput.value, 10) * 60 - remainingSeconds) * 1000,
-        end: Date.now()
+        end: Date.now(),
+        moodBefore: parseInt(moodBeforeInput.value, 10) || null,
+        moodAfter: parseInt(moodAfterInput.value, 10) || null
     };
     const sessions = JSON.parse(localStorage.getItem('sessions') || '[]');
     sessions.push(session);
