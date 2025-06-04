@@ -9,6 +9,7 @@ functions operate on a SQLite connection and rely on the schema in
 from __future__ import annotations
 
 import sqlite3
+from typing import Any
 from pathlib import Path
 
 
@@ -22,6 +23,19 @@ def init_db(conn: sqlite3.Connection) -> None:
     script_path = Path(__file__).resolve().parents[1] / "scripts" / "init_db.sql"
     with open(script_path, "r", encoding="utf-8") as f:
         conn.executescript(f.read())
+    conn.commit()
+
+
+def init_postgres_db(conn: Any) -> None:
+    """Initialize a PostgreSQL database using ``init_db_postgres.sql``."""
+    script_path = Path(__file__).resolve().parents[1] / "scripts" / "init_db_postgres.sql"
+    with open(script_path, "r", encoding="utf-8") as f:
+        sql = f.read()
+    cur = conn.cursor()
+    for statement in sql.split(';'):
+        stmt = statement.strip()
+        if stmt:
+            cur.execute(stmt + ';')
     conn.commit()
 
 
