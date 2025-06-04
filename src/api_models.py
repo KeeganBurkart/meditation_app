@@ -56,8 +56,3 @@ class LocationFrequencyResponse(BaseModel):
     points: List[StringValuePoint]
 
 
-class AdResponse(BaseModel):
-    """API representation of an advertisement."""
-
-    ad_id: int
-    text: str

@@ -23,7 +23,6 @@ from src import (
     sessions as session_models,
     profiles,
     analytics,
-    ads,
 )
 from src import monitoring
 from src.api_models import (
@@ -35,7 +34,11 @@ from src.api_models import (
     TimeOfDayResponse,
     StringValuePoint,
     LocationFrequencyResponse,
-    AdResponse,
+)
+from src.feed_models import (
+    CommentInput,
+    EncouragementInput,
+    FeedInteractionResponse,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -80,7 +83,6 @@ async def log_requests(request: Request, call_next):
 # Assuming ActivityFeed and NotificationManager classes were updated to accept 'conn'
 feed = activity.ActivityFeed(conn)
 notify_manager = notifications.NotificationManager(conn)
-ad_manager = ads.AdManager(conn)
 
 
 def get_current_user(authorization: str = Header(None)) -> int:
@@ -541,14 +543,6 @@ async def upload_my_photo(
     )  # Assuming profiles.update_photo exists
     return {"photo_url": photo_url}
 
-@app.get("/ads/random", response_model=AdResponse, responses={204: {"description": "No ad available"}})
-def get_random_ad() -> AdResponse | Response:
-    """Return a random advertisement for free-tier users."""
-    try:
-        ad = ad_manager.get_random_ad()
-    except ValueError:
-        return Response(status_code=204)
-    return AdResponse(ad_id=ad.ad_id, text=ad.text)
 
 
 @app.get("/analytics/me/consistency", response_model=ConsistencyDataResponse)

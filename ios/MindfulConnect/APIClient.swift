@@ -6,7 +6,6 @@ public protocol Networking {
     func sendEncouragement(_ text: String, from userId: Int, to targetUserId: Int) async throws -> FeedItem
     func fetchBadges(for userId: Int) async throws -> [Badge]
     func fetchPrivateChallenges(for userId: Int) async throws -> [Challenge]
-    func fetchAd() async throws -> Ad
 }
 
 public final class MockAPIClient: Networking {
@@ -51,9 +50,6 @@ public final class MockAPIClient: Networking {
     public func fetchPrivateChallenges(for userId: Int) async throws -> [Challenge] {
         loadJSON("private_challenges")
     }
-
-    public func fetchAd() async throws -> Ad {
-        loadJSON("ad")
 import Combine
 
 /// Handles communication with the backend API for authentication,

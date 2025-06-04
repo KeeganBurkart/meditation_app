@@ -81,6 +81,5 @@ Additional details on environment variables and deployment scripts are available
 
 Mindful Connect includes a Premium tier that unlocks advanced statistics,
 unlimited friends, and private challenges. The `subscriptions` module tracks a
-user's tier so the app can gate these features. Free tier users may see small
-text advertisements served via the `ads` module.
+user's tier so the app can gate these features.
 
