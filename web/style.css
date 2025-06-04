@@ -40,3 +40,44 @@ main {
         font-size: 2.5rem;
     }
 }
+nav a {
+    color: white;
+    margin: 0 0.5rem;
+    text-decoration: none;
+}
+
+.profile-container {
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.profile-photo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.activity-list {
+    width: 100%;
+    list-style: none;
+    padding: 0;
+}
+
+.activity-list li {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ccc;
+}
