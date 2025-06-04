@@ -75,4 +75,3 @@ def has_feature_access(conn: sqlite3.Connection, user_id: int, feature: str) -> 
     if feature in PREMIUM_FEATURES:
         return is_premium(conn, user_id)
     return True
-

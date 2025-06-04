@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react';
-import { getDashboard } from '../services/api';
+import { useEffect, useState } from "react";
+import { getDashboard } from "../services/api";
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<{total: number; sessions: number; streak: number} | null>(null);
+  const [stats, setStats] = useState<{
+    total: number;
+    sessions: number;
+    streak: number;
+  } | null>(null);
 
   useEffect(() => {
     getDashboard().then(setStats);

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Dict
 import sqlite3
 
+
 @dataclass
 class Profile:
     """Basic user profile with visibility flag."""

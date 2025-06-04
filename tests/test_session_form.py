@@ -10,8 +10,7 @@ def test_session_form_exists():
         '<input type="date"',
         '<input type="number"',
         '<input type="file"',
-        '<textarea',
+        "<textarea",
     ]
     for field in required_fields:
         assert field in content, f"Expected {field} in HTML form"
-
