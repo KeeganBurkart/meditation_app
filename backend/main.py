@@ -132,9 +132,8 @@ def create_session(info: SessionInput, current_user_id: int = Depends(get_curren
         mood_before=info.moodBefore,
         mood_after=info.moodAfter,
     )
-    # Assuming feed.log_session was updated to work with DB
-    # and potentially accepts session_id
-    feed.log_session(current_user_id, f"{info.type} {info.duration}m", session_id)
+    # Log the session description to the activity feed
+    feed.log_session(current_user_id, f"{info.type} {info.duration}m")
     return {"session_id": session_id}
 
 @app.get('/dashboard/me', response_model=dict)
@@ -158,7 +157,8 @@ def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
     total = dashboard.calculate_total_time(sess)
     count = dashboard.calculate_session_count(sess)
     streak = dashboard.calculate_current_streak(sess)
-    return {"total_time": total, "session_count": count, "current_streak": streak} # More descriptive keys
+    # Return keys expected by existing clients/tests
+    return {"total": total, "sessions": count, "streak": streak}
 
 @app.get('/feed', response_model=list) # Changed path to /feed, user_id from token
 def get_user_feed(current_user_id: int = Depends(get_current_user)):
@@ -285,9 +285,13 @@ async def upload_my_photo(request: Request, current_user_id: int = Depends(get_c
     if not file_data:
         raise HTTPException(status_code=400, detail="No image data received.")
 
-    # Basic filename generation, consider more robust naming/extension handling
-    original_filename = request.headers.get("X-Filename", f"photo_{current_user_id}")
-    ext = Path(original_filename).suffix or ".jpg" # Default to .jpg if no extension
+    # Sanitize filename from header to avoid path traversal or injection attacks
+    original_filename = request.headers.get("X-Filename")
+    if original_filename:
+        sanitized = os.path.basename(original_filename)
+    else:
+        sanitized = f"photo_{current_user_id}"
+    ext = Path(sanitized).suffix or ".jpg"  # Default to .jpg if no extension
     if ext.lower() not in [".jpg", ".jpeg", ".png", ".gif"]: # Basic extension validation
         raise HTTPException(status_code=400, detail="Unsupported image format. Please use JPG, PNG, or GIF.")
 
