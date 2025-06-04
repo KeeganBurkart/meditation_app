@@ -44,7 +44,8 @@ def test_signup_and_login(client):
         'password': 'secret'
     })
     assert resp.status_code == 200
-    assert resp.json()['user_id'] == user_id
+    token = resp.json()['access_token']
+    assert token
 
 
 def test_login_failure(client):
@@ -66,24 +67,29 @@ def test_sessions_and_dashboard(client):
     })
     user_id = resp.json()['user_id']
 
+    login = client.post('/auth/login', json={
+        'email': 'dash@example.com',
+        'password': 'pass'
+    })
+    token = login.json()['access_token']
+    headers = {'Authorization': f'Bearer {token}'}
+
     client.post('/sessions', json={
-        'user_id': user_id,
         'date': '2023-01-01',
         'duration': 10,
         'type': 'Guided',
         'time': '06:00',
         'location': 'Home'
-    })
+    }, headers=headers)
     client.post('/sessions', json={
-        'user_id': user_id,
         'date': '2023-01-02',
         'duration': 15,
         'type': 'Guided',
         'time': '06:00',
         'location': 'Home'
-    })
+    }, headers=headers)
 
-    resp = client.get(f'/dashboard/{user_id}')
+    resp = client.get(f'/dashboard/{user_id}', headers=headers)
     assert resp.status_code == 200
     data = resp.json()
     assert data['total'] == 25

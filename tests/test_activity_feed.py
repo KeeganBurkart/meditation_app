@@ -1,8 +1,24 @@
+import sqlite3
+
+from src import mindful
 from src.activity import ActivityFeed
 
 
+def setup_db():
+    conn = sqlite3.connect(":memory:")
+    mindful.init_db(conn)
+    for idx in range(1, 5):
+        conn.execute(
+            "INSERT INTO users (email, password_hash) VALUES (?, ?)",
+            (f'user{idx}@example.com', 'pw'),
+        )
+    conn.commit()
+    return conn
+
+
 def test_activity_feed():
-    feed = ActivityFeed()
+    conn = setup_db()
+    feed = ActivityFeed(conn)
     feed.add_friend(1, 2)
     feed.add_friend(1, 3)
 
