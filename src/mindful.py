@@ -117,6 +117,8 @@ def log_session(
     duration: int,
     session_type: str,
     session_date: str,
+    session_time: str | None = None,
+    location: str | None = None,
     *,
     notes: str | None = None,
     mood_before: int | None = None,

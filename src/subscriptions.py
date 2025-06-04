@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any
 import sqlite3
 
 
@@ -16,24 +16,35 @@ class Subscription:
 
 
 def subscribe_user(
-    conn: sqlite3.Connection,
+    conn: Any,
     user_id: int,
     tier: str,
     start_date: str,
     end_date: Optional[str] = None,
 ) -> None:
     """Create or update a subscription for ``user_id``."""
-    conn.execute(
-        """
+
+    is_sqlite = isinstance(conn, sqlite3.Connection)
+    placeholders = "?, ?, ?, ?" if is_sqlite else "%s, %s, %s, %s"
+    conflict = "ON CONFLICT(user_id)" if is_sqlite else "ON CONFLICT (user_id)"
+    excluded = "excluded" if is_sqlite else "EXCLUDED"
+
+    sql = f"""
         INSERT INTO subscriptions (user_id, tier, start_date, end_date)
-        VALUES (?, ?, ?, ?)
-        ON CONFLICT(user_id) DO UPDATE SET
-            tier=excluded.tier,
-            start_date=excluded.start_date,
-            end_date=excluded.end_date
-        """,
-        (user_id, tier, start_date, end_date),
-    )
+        VALUES ({placeholders})
+        {conflict} DO UPDATE SET
+            tier={excluded}.tier,
+            start_date={excluded}.start_date,
+            end_date={excluded}.end_date
+    """
+
+    params = (user_id, tier, start_date, end_date)
+    if is_sqlite:
+        conn.execute(sql, params)
+    else:
+        cur = conn.cursor()
+        cur.execute(sql, params)
+        cur.close()
     conn.commit()
 
 

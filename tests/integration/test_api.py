@@ -74,14 +74,16 @@ def test_sessions_and_dashboard(client):
         'date': '2023-01-01',
         'duration': 10,
         'type': 'Guided',
-        'time': '06:00'
+        'time': '06:00',
+        'location': 'Home'
     })
     client.post('/sessions', json={
         'user_id': user_id,
         'date': '2023-01-02',
         'duration': 15,
         'type': 'Guided',
-        'time': '06:00'
+        'time': '06:00',
+        'location': 'Home'
     })
 
     resp = client.get(f'/dashboard/{user_id}')
