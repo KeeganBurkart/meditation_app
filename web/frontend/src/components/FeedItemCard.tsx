@@ -9,6 +9,7 @@ import {
 export interface FeedItem {
   item_id: number;
   user_id: number;
+  user_display_name?: string;
   item_type: string;
   message: string;
   comments?: FeedComment[];
@@ -41,7 +42,10 @@ export default function FeedItemCard({ item }: Props) {
 
   return (
     <li>
-      <p>{item.message}</p>
+      <p>
+        <strong>{item.user_display_name || `User ${item.user_id}`}</strong>:{' '}
+        {item.message}
+      </p>
       {comments.length > 0 && (
         <ul>
           {comments.map((c) => (
