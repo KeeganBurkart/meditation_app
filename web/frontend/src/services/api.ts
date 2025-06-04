@@ -1,24 +1,31 @@
-const API_URL = 'http://localhost:8000';
+const API_URL = "http://localhost:8000";
 
 function getAuthHeader() {
-  const token = localStorage.getItem('token');
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export async function signup(email: string, password: string, displayName: string) {
+export async function signup(
+  email: string,
+  password: string,
+  displayName: string,
+) {
   const res = await fetch(`${API_URL}/auth/signup`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, display_name: displayName })
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, display_name: displayName }),
   });
   return res.ok;
 }
 
-export async function login(email: string, password: string): Promise<string | null> {
+export async function login(
+  email: string,
+  password: string,
+): Promise<string | null> {
   const res = await fetch(`${API_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
   });
   if (!res.ok) return null;
   const data = await res.json();
@@ -38,14 +45,16 @@ export interface SessionData {
 
 export async function logSession(data: SessionData) {
   await fetch(`${API_URL}/sessions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    body: JSON.stringify(data)
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify(data),
   });
 }
 
 export async function getDashboard() {
-  const res = await fetch(`${API_URL}/dashboard/me`, { headers: getAuthHeader() });
+  const res = await fetch(`${API_URL}/dashboard/me`, {
+    headers: getAuthHeader(),
+  });
   if (!res.ok) return null;
   return res.json();
 }
@@ -64,9 +73,9 @@ export async function getCommunityChallenges() {
 
 export async function joinCommunityChallenge(challengeId: number) {
   await fetch(`${API_URL}/challenges/join`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    body: JSON.stringify({ challenge_id: challengeId })
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ challenge_id: challengeId }),
   });
 }
 
@@ -77,46 +86,50 @@ export async function getMoodHistory() {
 }
 
 export async function getSubscription() {
-  const res = await fetch(`${API_URL}/subscriptions/me`, { headers: getAuthHeader() });
+  const res = await fetch(`${API_URL}/subscriptions/me`, {
+    headers: getAuthHeader(),
+  });
   if (!res.ok) return null;
   return res.json();
 }
 
 export async function updateSubscription(tier: string) {
   await fetch(`${API_URL}/subscriptions/me`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    body: JSON.stringify({ tier })
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ tier }),
   });
 }
 
 export async function addNotification(time: string, message: string) {
   await fetch(`${API_URL}/notifications`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    body: JSON.stringify({ reminder_time: time, message })
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ reminder_time: time, message }),
   });
 }
 
 export async function getNotifications() {
-  const res = await fetch(`${API_URL}/notifications`, { headers: getAuthHeader() });
+  const res = await fetch(`${API_URL}/notifications`, {
+    headers: getAuthHeader(),
+  });
   if (!res.ok) return [];
   return res.json();
 }
 
 export async function updateBio(bio: string) {
   await fetch(`${API_URL}/users/me/bio`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-    body: JSON.stringify({ bio })
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ bio }),
   });
 }
 
 export async function uploadPhoto(file: File) {
   const res = await fetch(`${API_URL}/users/me/photo`, {
-    method: 'POST',
-    headers: { 'X-Filename': file.name, ...getAuthHeader() },
-    body: file
+    method: "POST",
+    headers: { "X-Filename": file.name, ...getAuthHeader() },
+    body: file,
   });
   if (!res.ok) return null;
   return res.json();

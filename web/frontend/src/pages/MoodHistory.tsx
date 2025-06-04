@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { getMoodHistory } from '../services/api';
+import { useEffect, useState } from "react";
+import { getMoodHistory } from "../services/api";
 
 interface Mood {
   before: number | null;
@@ -18,7 +18,9 @@ export default function MoodHistory() {
       <h1>Mood History</h1>
       <ul>
         {history.map((m, idx) => (
-          <li key={idx}>{m.before} → {m.after}</li>
+          <li key={idx}>
+            {m.before} → {m.after}
+          </li>
         ))}
       </ul>
     </main>
