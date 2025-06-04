@@ -4,7 +4,6 @@ import ActivityFeedPage from "./ActivityFeed";
 
 const addComment = vi.fn();
 const addEnc = vi.fn();
-const getAd = vi.fn();
 
 vi.mock("../services/api", () => ({
   getFeed: () =>
@@ -39,10 +38,6 @@ vi.mock("../services/api", () => ({
     });
   },
   getSubscription: () => Promise.resolve({ tier: "free" }),
-  getRandomAd: () => {
-    getAd();
-    return Promise.resolve({ ad_id: 1, text: "Buy now" });
-  },
 }));
 
 describe("ActivityFeed page", () => {
@@ -54,6 +49,5 @@ describe("ActivityFeed page", () => {
     });
     fireEvent.click(screen.getByText("Comment"));
     expect(addComment).toHaveBeenCalled();
-    expect(await screen.findByText("Buy now")).toBeInTheDocument();
   });
 });

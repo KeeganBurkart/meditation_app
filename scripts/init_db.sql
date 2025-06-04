@@ -137,9 +137,3 @@ CREATE TABLE IF NOT EXISTS activity_feed (
     FOREIGN KEY(related_session_id) REFERENCES sessions(id)
 );
   
--- Advertisements for in-app promotions or announcements
-CREATE TABLE IF NOT EXISTS advertisements (
-    ad_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    text TEXT NOT NULL,
-    is_active INTEGER DEFAULT 1
-);

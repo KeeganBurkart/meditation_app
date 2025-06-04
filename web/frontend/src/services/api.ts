@@ -60,10 +60,6 @@ export interface FeedEncouragement {
   text: string;
 }
 
-export interface Ad {
-  ad_id: number;
-  text: string;
-}
 
 export async function logSession(data: SessionData) {
   await fetch(`${API_URL}/sessions`, {
@@ -186,10 +182,6 @@ export async function addFeedEncouragement(
   return res.json() as Promise<FeedEncouragement>;
 }
 
-export async function getRandomAd(): Promise<Ad | null> {
-  const res = await fetch(`${API_URL}/ads/random`, { headers: getAuthHeader() });
-  if (!res.ok) return null;
-  return res.json() as Promise<Ad>;
   
 // ---------------------- Custom Meditation Types ----------------------
 

@@ -24,10 +24,6 @@ public struct Challenge: Codable {
     public let endDate: String?
 }
 
-public struct Ad: Codable {
-    public let id: Int
-    public let text: String
-
 public struct SocialLoginRequest: Codable {
     public let provider: String
     public let token: String
