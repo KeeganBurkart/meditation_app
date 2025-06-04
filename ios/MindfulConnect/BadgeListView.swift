@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct BadgeListView: View {
+    @EnvironmentObject var viewModel: AppViewModel
     @State private var badges: [Badge] = []
+    private let api = APIClient()
 
     var body: some View {
         List(badges, id: \.name) { badge in
@@ -18,7 +20,8 @@ struct BadgeListView: View {
         }
         .onAppear {
             Task {
-                if let items = try? await MockAPIClient.shared.fetchBadges(for: 1) {
+                guard let token = viewModel.authToken else { return }
+                if let items = try? await api.fetchBadges(authToken: token) {
                     badges = items
                 }
             }
