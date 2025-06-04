@@ -1,10 +1,10 @@
-"""Simple notification preferences management."""
+"""Notification preference helpers backed by the database."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import time
-from typing import Dict, List
+from datetime import time, datetime
+from typing import Any, List
 
 
 @dataclass
@@ -18,24 +18,48 @@ class Notification:
 
 
 class NotificationManager:
-    """In-memory store for notification preferences."""
+    """Database-backed notification preference manager."""
 
-    def __init__(self) -> None:
-        self._store: Dict[int, List[Notification]] = {}
-        self._counter = 0
+    def __init__(self, conn: Any) -> None:
+        self._conn = conn
 
-    def add_notification(self, user_id: int, reminder_time: time, message: str) -> int:
+    def _to_time(self, value: Any) -> time:
+        if isinstance(value, time):
+            return value
+        if isinstance(value, datetime):
+            return value.time()
+        value_str = str(value)
+        if " " in value_str:
+            value_str = value_str.split(" ")[-1]
+        return time.fromisoformat(value_str)
+
+    def add_notification(self, user_id: int, reminder_time: time, message: str, enabled: bool = True) -> int:
         """Create a new notification and return its identifier."""
-        self._counter += 1
-        note = Notification(self._counter, reminder_time, message, True)
-        self._store.setdefault(user_id, []).append(note)
-        return note.notification_id
+        cur = self._conn.execute(
+            "INSERT INTO user_notifications (user_id, reminder_time, message, is_enabled) "
+            "VALUES (?, ?, ?, ?) RETURNING id",
+            (user_id, reminder_time.isoformat(), message, int(enabled)),
+        )
+        note_id = cur.fetchone()[0]
+        self._conn.commit()
+        return note_id
 
     def remove_notification(self, user_id: int, notification_id: int) -> None:
         """Remove a notification for ``user_id`` by ``notification_id``."""
-        if user_id in self._store:
-            self._store[user_id] = [n for n in self._store[user_id] if n.notification_id != notification_id]
+        self._conn.execute(
+            "DELETE FROM user_notifications WHERE user_id = ? AND id = ?",
+            (user_id, notification_id),
+        )
+        self._conn.commit()
 
     def get_notifications(self, user_id: int) -> List[Notification]:
         """Return all notifications for ``user_id``."""
-        return list(self._store.get(user_id, []))
+        cur = self._conn.execute(
+            "SELECT id, reminder_time, message, is_enabled FROM user_notifications WHERE user_id = ? ORDER BY id",
+            (user_id,),
+        )
+        rows = cur.fetchall()
+        return [
+            Notification(r[0], self._to_time(r[1]), r[2], bool(r[3]))
+            for r in rows
+        ]

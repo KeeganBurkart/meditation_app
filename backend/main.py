@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+  
 from datetime import time
 from fastapi import FastAPI, HTTPException, Request, Depends, Header
 from jose import JWTError, jwt
@@ -41,7 +42,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 feed = activity.ActivityFeed()
-notify_manager = notifications.NotificationManager()
+notify_manager = notifications.NotificationManager(conn)
 
 
 def get_current_user(authorization: str = Header(None)) -> int:
@@ -83,6 +84,7 @@ class FollowInput(BaseModel):
 class NotificationInput(BaseModel):
     reminder_time: str
     message: str
+    enabled: bool = True
 
 @app.post('/auth/signup')
 def signup(data: SignUp):
@@ -131,7 +133,7 @@ def get_dashboard(user_id: int, current_user: int = Depends(get_current_user)):
             r[0],
             r[1],
             time.fromisoformat(r[3]) if r[3] else time(0, 0),
-            session_date=r[2],
+            session_date=date.fromisoformat(r[2]) if isinstance(r[2], str) else r[2],
             location=r[4] or ''
         )
         for r in records
