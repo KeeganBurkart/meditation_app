@@ -6,7 +6,9 @@ from src import mindful, auth
 def test_register_user():
     conn = sqlite3.connect(":memory:")
     mindful.init_db(conn)
-    user_id = auth.register_user(conn, "user@example.com", "secret", display_name="User")
+    user_id = auth.register_user(
+        conn, "user@example.com", "secret", display_name="User"
+    )
     cur = conn.execute(
         "SELECT email, display_name, bio, photo_url, is_public FROM users WHERE id = ?",
         (user_id,),

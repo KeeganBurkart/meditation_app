@@ -32,4 +32,3 @@ def test_get_random_ad_no_active_raises():
     manager.add_ad("Inactive", is_active=False)
     with pytest.raises(ValueError):
         manager.get_random_ad()
-

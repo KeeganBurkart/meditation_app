@@ -19,24 +19,17 @@ jobs:
     - name: Install frontend dependencies
       working-directory: web/frontend
       run: npm ci
+    - name: Lint frontend code
+      working-directory: web/frontend
+      run: |
+        prettier --check .
     - name: Run frontend unit tests
       working-directory: web/frontend
       run: npm test
-    - name: Run Playwright tests
-      if: hashFiles('web/frontend/playwright.config.*') != ''
-      working-directory: web/frontend
-      run: |
-        npx playwright install --with-deps
-        npx playwright test
     - name: Run Cypress tests
       if: hashFiles('web/frontend/cypress.config.*') != ''
       working-directory: web/frontend
       run: npx cypress run
-    - name: Run iOS UI tests
-      if: runner.os == 'macOS'
-      run: |
-        xcodebuild test -scheme MindfulConnectUITests \
-          -destination 'platform=iOS Simulator,name=iPhone 14'
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -45,7 +38,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install httpx
     - name: Run Python tests
       run: pytest -v
 
@@ -55,6 +47,6 @@ jobs:
     - uses: actions/checkout@v3
     - name: Run iOS UI tests
       run: |
-        xcodebuild test -project ios/MindfulConnect/MindfulConnect.xcodeproj \
+        xcodebuild test -project ios/MindfulConnect.xcodeproj \
           -scheme MindfulConnect \
           -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'

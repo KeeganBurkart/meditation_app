@@ -33,7 +33,9 @@ class NotificationManager:
             value_str = value_str.split(" ")[-1]
         return time.fromisoformat(value_str)
 
-    def add_notification(self, user_id: int, reminder_time: time, message: str, enabled: bool = True) -> int:
+    def add_notification(
+        self, user_id: int, reminder_time: time, message: str, enabled: bool = True
+    ) -> int:
         """Create a new notification and return its identifier."""
         cur = self._conn.execute(
             "INSERT INTO user_notifications (user_id, reminder_time, message, is_enabled) "
@@ -59,7 +61,4 @@ class NotificationManager:
             (user_id,),
         )
         rows = cur.fetchall()
-        return [
-            Notification(r[0], self._to_time(r[1]), r[2], bool(r[3]))
-            for r in rows
-        ]
+        return [Notification(r[0], self._to_time(r[1]), r[2], bool(r[3])) for r in rows]
