@@ -39,65 +39,57 @@ public class AppViewModel: ObservableObject {
         guard let token = authToken else { return }
         let request = ProfileVisibilityRequest(isPublic: isPublic)
         isLoading = true
-        api.updateProfileVisibility(request, authToken: token)
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self = self else { return }
-                self.isLoading = false
-                if case .failure(let error) = completion {
-                    self.errorMessage = error.localizedDescription
-                }
-            }, receiveValue: { [weak self] in
-                self?.user?.visibility = isPublic ? "public" : "private"
-            })
-            .store(in: &cancellables)
+        Task {
+            do {
+                try await api.updateProfileVisibility(request, authToken: token)
+                user?.visibility = isPublic ? "public" : "private"
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isLoading = false
+        }
     }
 
     public func loadMeditationTypes() {
         guard let token = authToken else { return }
         isLoading = true
-        api.fetchMeditationTypes(authToken: token)
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self = self else { return }
-                self.isLoading = false
-                if case .failure(let error) = completion {
-                    self.errorMessage = error.localizedDescription
-                }
-            }, receiveValue: { [weak self] types in
-                self?.meditationTypes = types
-            })
-            .store(in: &cancellables)
+        Task {
+            do {
+                let types = try await api.fetchMeditationTypes(authToken: token)
+                meditationTypes = types
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isLoading = false
+        }
     }
 
     public func addMeditationType(name: String) {
         guard let token = authToken else { return }
         let request = CreateMeditationTypeRequest(name: name)
         isLoading = true
-        api.createMeditationType(request, authToken: token)
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self = self else { return }
-                self.isLoading = false
-                if case .failure(let error) = completion {
-                    self.errorMessage = error.localizedDescription
-                }
-            }, receiveValue: { [weak self] type in
-                self?.meditationTypes.append(type)
-            })
-            .store(in: &cancellables)
+        Task {
+            do {
+                let type = try await api.createMeditationType(request, authToken: token)
+                meditationTypes.append(type)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isLoading = false
+        }
     }
 
     public func deleteMeditationType(id: String) {
         guard let token = authToken else { return }
         isLoading = true
-        api.deleteMeditationType(id: id, authToken: token)
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self = self else { return }
-                self.isLoading = false
-                if case .failure(let error) = completion {
-                    self.errorMessage = error.localizedDescription
-                }
-            }, receiveValue: { [weak self] in
-                self?.meditationTypes.removeAll { $0.id == id }
-            })
-            .store(in: &cancellables)
+        Task {
+            do {
+                try await api.deleteMeditationType(id: id, authToken: token)
+                meditationTypes.removeAll { $0.id == id }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isLoading = false
+        }
     }
 }

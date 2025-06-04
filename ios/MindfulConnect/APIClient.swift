@@ -99,60 +99,85 @@ public struct APIClient {
 
     // MARK: - Profile Visibility
     public func updateProfileVisibility(_ requestBody: ProfileVisibilityRequest,
-                                        authToken: String) -> AnyPublisher<Void, Error> {
-        let data = try? JSONEncoder().encode(requestBody)
-        return requestData("users/me/profile-visibility", method: "PUT", body: data, authToken: authToken)
-            .map { _ in () }
-            .eraseToAnyPublisher()
+                                        authToken: String) async throws {
+        var request = URLRequest(url: baseURL.appendingPathComponent("users/me/profile-visibility"))
+        request.httpMethod = "PUT"
+        request.httpBody = try JSONEncoder().encode(requestBody)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        _ = try await session.data(for: request)
     }
 
     // MARK: - Custom Meditation Types
-    public func fetchMeditationTypes(authToken: String) -> AnyPublisher<[MeditationType], Error> {
-        request("users/me/custom-meditation-types", authToken: authToken)
+    public func fetchMeditationTypes(authToken: String) async throws -> [MeditationType] {
+        var request = URLRequest(url: baseURL.appendingPathComponent("users/me/custom-meditation-types"))
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode([MeditationType].self, from: data)
     }
 
     public func createMeditationType(_ requestBody: CreateMeditationTypeRequest,
-                                     authToken: String) -> AnyPublisher<MeditationType, Error> {
-        let data = try? JSONEncoder().encode(requestBody)
-        return request("users/me/custom-meditation-types", method: "POST", body: data, authToken: authToken)
+                                     authToken: String) async throws -> MeditationType {
+        var request = URLRequest(url: baseURL.appendingPathComponent("users/me/custom-meditation-types"))
+        request.httpMethod = "POST"
+        request.httpBody = try JSONEncoder().encode(requestBody)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode(MeditationType.self, from: data)
     }
 
     public func updateMeditationType(id: String,
                                      requestBody: UpdateMeditationTypeRequest,
-                                     authToken: String) -> AnyPublisher<Void, Error> {
-        let data = try? JSONEncoder().encode(requestBody)
+                                     authToken: String) async throws {
         let endpoint = "users/me/custom-meditation-types/\(id)"
-        return requestData(endpoint, method: "PUT", body: data, authToken: authToken)
-            .map { _ in () }
-            .eraseToAnyPublisher()
+        var request = URLRequest(url: baseURL.appendingPathComponent(endpoint))
+        request.httpMethod = "PUT"
+        request.httpBody = try JSONEncoder().encode(requestBody)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        _ = try await session.data(for: request)
     }
 
-    public func deleteMeditationType(id: String, authToken: String) -> AnyPublisher<Void, Error> {
+    public func deleteMeditationType(id: String, authToken: String) async throws {
         let endpoint = "users/me/custom-meditation-types/\(id)"
-        return requestData(endpoint, method: "DELETE", authToken: authToken)
-            .map { _ in () }
-            .eraseToAnyPublisher()
+        var request = URLRequest(url: baseURL.appendingPathComponent(endpoint))
+        request.httpMethod = "DELETE"
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        _ = try await session.data(for: request)
     }
 
 
     // MARK: - Analytics
 
-    public func fetchConsistency(authToken: String) -> AnyPublisher<ConsistencyDataResponse, Error> {
-        request("analytics/me/consistency", authToken: authToken)
+    public func fetchConsistency(authToken: String) async throws -> ConsistencyDataResponse {
+        var request = URLRequest(url: baseURL.appendingPathComponent("analytics/me/consistency"))
+        request.setValue("Bearer \(authToken\)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode(ConsistencyDataResponse.self, from: data)
     }
 
-    public func fetchMoodCorrelation(authToken: String) -> AnyPublisher<MoodCorrelationResponse, Error> {
-        request("analytics/me/mood-correlation", authToken: authToken)
+    public func fetchMoodCorrelation(authToken: String) async throws -> MoodCorrelationResponse {
+        var request = URLRequest(url: baseURL.appendingPathComponent("analytics/me/mood-correlation"))
+        request.setValue("Bearer \(authToken\)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode(MoodCorrelationResponse.self, from: data)
     }
 
-    public func fetchTimeOfDay(authToken: String) -> AnyPublisher<TimeOfDayResponse, Error> {
-        request("analytics/me/time-of-day", authToken: authToken)
+    public func fetchTimeOfDay(authToken: String) async throws -> TimeOfDayResponse {
+        var request = URLRequest(url: baseURL.appendingPathComponent("analytics/me/time-of-day"))
+        request.setValue("Bearer \(authToken\)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode(TimeOfDayResponse.self, from: data)
     }
 
-    public func fetchLocationFrequency(authToken: String) -> AnyPublisher<LocationFrequencyResponse, Error> {
-        request("analytics/me/location-frequency", authToken: authToken)
-
-    // MARK: - Activity Feed
+    public func fetchLocationFrequency(authToken: String) async throws -> LocationFrequencyResponse {
+        var request = URLRequest(url: baseURL.appendingPathComponent("analytics/me/location-frequency"))
+        request.setValue("Bearer \(authToken\)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode(LocationFrequencyResponse.self, from: data)
+    }
+// MARK: - Activity Feed
     public func fetchFeed(authToken: String) async throws -> [FeedItem] {
         var request = URLRequest(url: baseURL.appendingPathComponent("feed"))
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
