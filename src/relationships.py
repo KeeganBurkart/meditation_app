@@ -9,7 +9,8 @@ from typing import List
 def follow_user(conn: sqlite3.Connection, follower_id: int, followed_id: int) -> None:
     """Create a follow relationship from ``follower_id`` to ``followed_id``."""
     conn.execute(
-        "INSERT OR IGNORE INTO follows (follower_id, followed_id) VALUES (?, ?)",
+        "INSERT INTO follows (follower_id, followed_id) VALUES (?, ?)"
+        " ON CONFLICT(follower_id, followed_id) DO NOTHING",
         (follower_id, followed_id),
     )
     conn.commit()

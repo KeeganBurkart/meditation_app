@@ -22,11 +22,12 @@ def register_user(
     """Register a user with an email and password and return the new user id."""
     password_hash = hash_password(password)
     cur = conn.execute(
-        "INSERT INTO users (email, password_hash, display_name) VALUES (?, ?, ?)",
+        "INSERT INTO users (email, password_hash, display_name) VALUES (?, ?, ?) RETURNING id",
         (email, password_hash, display_name),
     )
+    user_id = cur.fetchone()[0]
     conn.commit()
-    return cur.lastrowid
+    return user_id
 
 
 def register_social_user(
@@ -39,10 +40,10 @@ def register_social_user(
 ) -> int:
     """Register a user using a social login provider."""
     cur = conn.execute(
-        "INSERT INTO users (email, password_hash, display_name) VALUES (?, ?, ?)",
+        "INSERT INTO users (email, password_hash, display_name) VALUES (?, ?, ?) RETURNING id",
         (email, None, display_name),
     )
-    user_id = cur.lastrowid
+    user_id = cur.fetchone()[0]
     conn.execute(
         "INSERT INTO social_accounts (user_id, provider, provider_user_id) VALUES (?, ?, ?)",
         (user_id, provider, provider_user_id),

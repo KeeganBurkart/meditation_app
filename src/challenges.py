@@ -16,11 +16,12 @@ def create_challenge(
 ) -> int:
     """Insert a challenge and return its ID."""
     cur = conn.execute(
-        "INSERT INTO challenges (name, created_by, is_private) VALUES (?, ?, ?)",
+        "INSERT INTO challenges (name, created_by, is_private) VALUES (?, ?, ?) RETURNING id",
         (name, created_by, int(is_private)),
     )
+    challenge_id = cur.fetchone()[0]
     conn.commit()
-    return cur.lastrowid
+    return challenge_id
 
 
 def award_badge(conn: sqlite3.Connection, user_id: int, badge_name: str) -> None:

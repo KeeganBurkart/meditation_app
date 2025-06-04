@@ -69,17 +69,19 @@ def create_challenge(
     """Create a community challenge and return its ID."""
     cur = conn.execute(
         "INSERT INTO community_challenges (name, target_minutes, start_date, end_date)"
-        " VALUES (?, ?, ?, ?)",
+        " VALUES (?, ?, ?, ?) RETURNING id",
         (name, target_minutes, start_date, end_date),
     )
+    challenge_id = cur.fetchone()[0]
     conn.commit()
-    return cur.lastrowid
+    return challenge_id
 
 
 def join_challenge(conn: sqlite3.Connection, user_id: int, challenge_id: int) -> None:
     """Join a community challenge if not already joined."""
     conn.execute(
-        "INSERT OR IGNORE INTO challenge_progress (user_id, challenge_id) VALUES (?, ?)",
+        "INSERT INTO challenge_progress (user_id, challenge_id) VALUES (?, ?)"
+        " ON CONFLICT(user_id, challenge_id) DO NOTHING",
         (user_id, challenge_id),
     )
     conn.commit()
@@ -125,11 +127,11 @@ def log_session(
     """Insert a session and optional mood data and return the session ID."""
 
     cur = conn.execute(
-        "INSERT INTO sessions (user_id, duration, session_type, session_date, session_time, location, notes) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (user_id, duration, session_type, session_date, session_time, location, notes),
+        "INSERT INTO sessions (user_id, duration, session_type, session_date, notes) "
+        "VALUES (?, ?, ?, ?, ?) RETURNING id",
+        (user_id, duration, session_type, session_date, notes),
     )
-    session_id = cur.lastrowid
+    session_id = cur.fetchone()[0]
 
     if mood_before is not None or mood_after is not None:
         conn.execute(
