@@ -9,8 +9,7 @@ struct ProfileSettingsView: View {
             Toggle(isOn: Binding(
                 get: { viewModel.user?.visibility == "public" },
                 set: { isPublic in
-                    let visibility = isPublic ? "public" : "private"
-                    viewModel.updateVisibility(to: visibility)
+                    viewModel.updateVisibility(isPublic: isPublic)
                 }
             )) {
                 Text("Public Profile")

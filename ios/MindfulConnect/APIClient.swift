@@ -99,9 +99,11 @@ public struct APIClient {
 
     // MARK: - Profile Visibility
     public func updateProfileVisibility(_ requestBody: ProfileVisibilityRequest,
-                                        authToken: String) -> AnyPublisher<ProfileVisibilityResponse, Error> {
+                                        authToken: String) -> AnyPublisher<Void, Error> {
         let data = try? JSONEncoder().encode(requestBody)
-        return request("users/me/profile-visibility", method: "PUT", body: data, authToken: authToken)
+        return requestData("users/me/profile-visibility", method: "PUT", body: data, authToken: authToken)
+            .map { _ in () }
+            .eraseToAnyPublisher()
     }
 
     // MARK: - Custom Meditation Types
@@ -115,16 +117,18 @@ public struct APIClient {
         return request("users/me/custom-meditation-types", method: "POST", body: data, authToken: authToken)
     }
 
-    public func updateMeditationType(id: UUID,
+    public func updateMeditationType(id: String,
                                      requestBody: UpdateMeditationTypeRequest,
-                                     authToken: String) -> AnyPublisher<MeditationType, Error> {
+                                     authToken: String) -> AnyPublisher<Void, Error> {
         let data = try? JSONEncoder().encode(requestBody)
-        let endpoint = "users/me/custom-meditation-types/\(id.uuidString)"
-        return request(endpoint, method: "PUT", body: data, authToken: authToken)
+        let endpoint = "users/me/custom-meditation-types/\(id)"
+        return requestData(endpoint, method: "PUT", body: data, authToken: authToken)
+            .map { _ in () }
+            .eraseToAnyPublisher()
     }
 
-    public func deleteMeditationType(id: UUID, authToken: String) -> AnyPublisher<Void, Error> {
-        let endpoint = "users/me/custom-meditation-types/\(id.uuidString)"
+    public func deleteMeditationType(id: String, authToken: String) -> AnyPublisher<Void, Error> {
+        let endpoint = "users/me/custom-meditation-types/\(id)"
         return requestData(endpoint, method: "DELETE", authToken: authToken)
             .map { _ in () }
             .eraseToAnyPublisher()
