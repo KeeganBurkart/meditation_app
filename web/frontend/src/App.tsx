@@ -1,0 +1,24 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Timer from './pages/Timer';
+import SessionForm from './pages/SessionForm';
+import Dashboard from './pages/Dashboard';
+import ActivityFeedPage from './pages/ActivityFeed';
+import './App.css';
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/timer" element={<Timer />} />
+        <Route path="/session" element={<SessionForm />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/feed" element={<ActivityFeedPage />} />
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

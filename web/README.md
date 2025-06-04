@@ -1,10 +1,23 @@
 # Web App
 
-This folder contains a very small web companion for **Mindful Connect**.
-It currently mirrors the app's meditation timer and stores completed
-sessions in `localStorage`. Open `index.html` in a modern browser to try it out.
-The `profile.html` page displays your user information and basic statistics
-calculated from stored sessions.
+This folder now contains a small React + TypeScript project built with Vite.
+The original HTML pages remain for reference, but the new application lives in
+`frontend/` and communicates with the FastAPI backend under `backend/`.
 
-The layout uses basic CSS flexbox and media queries to remain usable on
-both mobile and desktop screens.
+## Getting Started
+
+Install Node dependencies and start the development server:
+
+```bash
+cd web/frontend
+npm install
+npm run dev
+```
+
+Start the backend API in another terminal:
+
+```bash
+uvicorn backend.main:app --reload
+```
+
+Open the printed local URL to use the timer, session form and other pages.
