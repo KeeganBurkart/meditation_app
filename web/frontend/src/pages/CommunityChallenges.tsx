@@ -14,14 +14,24 @@ interface Challenge {
 
 export default function CommunityChallenges() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getCommunityChallenges().then(setChallenges);
+    getCommunityChallenges()
+      .then((data) => {
+        if (data) setChallenges(data as Challenge[]);
+        else setError("Failed to load challenges");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   async function handleJoin(id: number) {
     await joinCommunityChallenge(id);
   }
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <main>

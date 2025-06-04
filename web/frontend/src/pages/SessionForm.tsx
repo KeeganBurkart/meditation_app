@@ -21,9 +21,17 @@ export default function SessionForm() {
     moodAfter: 5,
   });
   const [types, setTypes] = useState<CustomMeditationType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    getCustomTypes().then(setTypes);
+    getCustomTypes()
+      .then((data) => {
+        if (data) setTypes(data);
+        else setError("Failed to load types");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   function handleChange(
@@ -41,6 +49,7 @@ export default function SessionForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSaving(true);
     const sessionId = await logSession({
       ...form,
       duration: Number(form.duration),
@@ -54,7 +63,11 @@ export default function SessionForm() {
     if (sessionId) {
       navigate(`/sessions/${sessionId}`, { state: { ...form, photo_url: photoUrl } });
     }
+    setSaving(false);
   }
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <main>
@@ -143,7 +156,7 @@ export default function SessionForm() {
           Photo
           <input type="file" onChange={handleFileChange} />
         </label>
-        <button type="submit">Save Session</button>
+        <button type="submit" disabled={saving}>Save Session</button>
       </form>
     </main>
   );

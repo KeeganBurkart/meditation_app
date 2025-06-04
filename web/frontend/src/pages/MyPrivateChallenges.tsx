@@ -18,16 +18,16 @@ export default function MyPrivateChallenges() {
   });
   const [premium, setPremium] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     async function load() {
       const sub = await getSubscription();
-      const hasPremium = sub?.tier === "premium";
-      setPremium(hasPremium);
-      if (hasPremium) {
-        const list = await getPrivateChallenges();
-        setChallenges(list);
-      }
+      setPremium(sub?.tier === "premium");
+      const list = await getPrivateChallenges();
+      if (list) setChallenges(list);
+      else setError("Failed to load challenges");
       setLoaded(true);
     }
     load();
@@ -39,6 +39,7 @@ export default function MyPrivateChallenges() {
       <main>
         <h1>Private Challenges</h1>
         <p>Upgrade to premium to use private challenges.</p>
+        <a href="/subscription">View subscription options</a>
       </main>
     );
 
@@ -51,9 +52,12 @@ export default function MyPrivateChallenges() {
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
+    setSaving(true);
     const c = await createPrivateChallenge(form);
     if (c) setChallenges((prev) => [...prev, c]);
+    else setError("Failed to create challenge");
     setForm({ name: "", target_minutes: 10, start_date: "", end_date: "" });
+    setSaving(false);
   }
 
   async function remove(id: number) {
@@ -64,6 +68,7 @@ export default function MyPrivateChallenges() {
   return (
     <main>
       <h1>My Private Challenges</h1>
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={create}>
         <input
           name="name"
@@ -93,7 +98,7 @@ export default function MyPrivateChallenges() {
           onChange={handleChange}
           required
         />
-        <button type="submit">Create</button>
+        <button type="submit" disabled={saving}>Create</button>
       </form>
       <ul>
         {challenges.map((c) => (

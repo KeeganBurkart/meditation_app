@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import CustomTypes from "./CustomTypes";
+import * as api from "../services/api";
 
 const create = vi.fn();
 
@@ -22,5 +23,11 @@ describe("CustomTypes page", () => {
     });
     fireEvent.click(screen.getByText("Add"));
     expect(create).toHaveBeenCalled();
+  });
+
+  it("shows error on load failure", async () => {
+    vi.spyOn(api, "getCustomTypes").mockResolvedValueOnce(null as any);
+    render(<CustomTypes />);
+    expect(await screen.findByText(/Failed to load types/)).toBeInTheDocument();
   });
 });
