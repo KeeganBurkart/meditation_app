@@ -29,6 +29,8 @@ The following tools and frameworks will be used for the project:
 - **Framework**: React with TypeScript
 - **Routing**: React Router
 - **Styling**: CSS Modules or styled-components
+- A simple HTML form for logging meditation sessions is available at
+  `web/session_form.html`.
 
 ### Backend
 - **Runtime**: Node.js
