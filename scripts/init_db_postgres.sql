@@ -91,4 +91,10 @@ CREATE TABLE IF NOT EXISTS activity_feed (
     FOREIGN KEY(user_id) REFERENCES users(id),
     FOREIGN KEY(target_user_id) REFERENCES users(id),
     FOREIGN KEY(related_session_id) REFERENCES sessions(id)
+
+-- Advertisements for in-app promotions or announcements
+CREATE TABLE IF NOT EXISTS advertisements (
+    ad_id SERIAL PRIMARY KEY,
+    text TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE
 );
