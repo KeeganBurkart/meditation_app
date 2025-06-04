@@ -77,4 +77,3 @@ class DurationChallenge:
     def is_completed(self, durations: Iterable[int]) -> bool:
         """Return ``True`` if total minutes meets or exceeds the target."""
         return sum(durations) >= self.target_minutes
-
