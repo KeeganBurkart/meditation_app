@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
-from datetime import time
+from datetime import time, date
 from fastapi import FastAPI, HTTPException, Request
 import logging
 from pydantic import BaseModel
@@ -36,7 +36,7 @@ async def log_requests(request: Request, call_next):
     logger.info("Completed %s", response.status_code)
     return response
 
-feed = activity.ActivityFeed()
+feed = activity.ActivityFeed(conn)
 notify_manager = notifications.NotificationManager()
 
 class SignUp(BaseModel):
@@ -112,7 +112,7 @@ def get_dashboard(user_id: int):
             r[0],
             r[1],
             time.fromisoformat(r[3]) if r[3] else time(0, 0),
-            session_date=r[2],
+            session_date=date.fromisoformat(r[2]),
             location=r[4] or ''
         )
         for r in records
@@ -124,8 +124,32 @@ def get_dashboard(user_id: int):
 
 @app.get('/feed/{user_id}')
 def get_feed(user_id: int):
-    items = feed.get_feed(user_id)
-    return [item.__dict__ for item in items]
+    # Determine which users the requester follows and include their own items
+    followed = relationships.get_following(conn, user_id)
+    followed.append(user_id)
+    if not followed:
+        return []
+
+    placeholders = ",".join("?" for _ in followed)
+    query = (
+        "SELECT f.id, f.user_id, f.item_type, f.message, f.timestamp, f.target_user_id "
+        "FROM feed_items f JOIN users u ON f.user_id = u.id "
+        f"WHERE f.user_id IN ({placeholders}) AND (u.is_public = 1 OR f.user_id = ?) "
+        "ORDER BY f.timestamp DESC, f.id DESC LIMIT 10"
+    )
+    cur = conn.execute(query, (*followed, user_id))
+    rows = cur.fetchall()
+    return [
+        {
+            "item_id": r[0],
+            "user_id": r[1],
+            "item_type": r[2],
+            "message": r[3],
+            "timestamp": r[4],
+            "target_user_id": r[5],
+        }
+        for r in rows
+    ]
 
 @app.post('/follow')
 def follow(data: FollowInput):

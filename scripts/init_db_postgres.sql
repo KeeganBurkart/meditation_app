@@ -85,3 +85,15 @@ CREATE TABLE IF NOT EXISTS advertisements (
     text TEXT NOT NULL,
     is_active BOOLEAN DEFAULT TRUE
 );
+
+-- Social activity feed items
+CREATE TABLE IF NOT EXISTS feed_items (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    item_type TEXT NOT NULL,
+    message TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    target_user_id INTEGER,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(target_user_id) REFERENCES users(id)
+);

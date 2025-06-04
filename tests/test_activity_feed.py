@@ -1,8 +1,13 @@
+import sqlite3
+
 from src.activity import ActivityFeed
+from src import mindful
 
 
 def test_activity_feed():
-    feed = ActivityFeed()
+    conn = sqlite3.connect(":memory:")
+    mindful.init_db(conn)
+    feed = ActivityFeed(conn)
     feed.add_friend(1, 2)
     feed.add_friend(1, 3)
 
