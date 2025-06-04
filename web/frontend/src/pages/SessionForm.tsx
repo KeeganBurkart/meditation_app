@@ -130,28 +130,30 @@ export default function SessionForm() {
           Notes
           <textarea name="notes" value={form.notes} onChange={handleChange} />
         </label>
-        <label>
-          Mood Before
-          <input
-            type="number"
-            name="moodBefore"
-            value={form.moodBefore}
-            onChange={handleChange}
-            min="1"
-            max="10"
-          />
-        </label>
-        <label>
-          Mood After
-          <input
-            type="number"
-            name="moodAfter"
-            value={form.moodAfter}
-            onChange={handleChange}
-            min="1"
-            max="10"
-          />
-        </label>
+        <div className="form-row">
+          <label>
+            Mood Before
+            <input
+              type="number"
+              name="moodBefore"
+              value={form.moodBefore}
+              onChange={handleChange}
+              min="1"
+              max="10"
+            />
+          </label>
+          <label>
+            Mood After
+            <input
+              type="number"
+              name="moodAfter"
+              value={form.moodAfter}
+              onChange={handleChange}
+              min="1"
+              max="10"
+            />
+          </label>
+        </div>
         <label>
           Photo
           <input type="file" onChange={handleFileChange} />

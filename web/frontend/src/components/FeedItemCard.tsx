@@ -41,7 +41,7 @@ export default function FeedItemCard({ item }: Props) {
   }
 
   return (
-    <li>
+    <li className="feed-item">
       <p>
         <strong>{item.user_display_name || `User ${item.user_id}`}</strong>:{' '}
         {item.message}
