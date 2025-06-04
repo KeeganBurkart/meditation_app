@@ -3,12 +3,12 @@ from __future__ import annotations
 import os
 import sqlite3
 from datetime import time, date
-from pathlib import Path
-from uuid import uuid4
-
 from fastapi import FastAPI, HTTPException, Request, Depends, Header
 from fastapi.staticfiles import StaticFiles
 from jose import JWTError, jwt
+from pathlib import Path
+from uuid import uuid4
+
 import logging
 from pydantic import BaseModel
 
@@ -98,6 +98,8 @@ class NotificationInput(BaseModel):
 class BioUpdate(BaseModel):
     bio: str
 
+# Removed redundant BioUpdate class definition that was present in the conflict
+
 @app.post('/auth/signup')
 def signup_user(data: SignUp): # Renamed for clarity from just 'signup'
     user_id = auth.register_user(conn, data.email, data.password, display_name=data.display_name)
@@ -131,6 +133,7 @@ def create_session(info: SessionInput, current_user_id: int = Depends(get_curren
         mood_after=info.moodAfter,
     )
     # Assuming feed.log_session was updated to work with DB
+    # and potentially accepts session_id
     feed.log_session(current_user_id, f"{info.type} {info.duration}m", session_id)
     return {"session_id": session_id}
 
@@ -296,6 +299,7 @@ async def upload_my_photo(request: Request, current_user_id: int = Depends(get_c
         with open(dest, 'wb') as out_file:
             out_file.write(file_data)
     except IOError:
+        logger.error(f"IOError saving uploaded photo to {dest}")
         raise HTTPException(status_code=500, detail="Could not save uploaded photo.")
 
     photo_url = f"/uploads/{filename}"

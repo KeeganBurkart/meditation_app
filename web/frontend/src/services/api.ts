@@ -96,3 +96,21 @@ export async function getNotifications(userId: number) {
   if (!res.ok) return [];
   return res.json();
 }
+
+export async function updateBio(userId: number, bio: string) {
+  await fetch(`${API_URL}/users/${userId}/bio`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bio })
+  });
+}
+
+export async function uploadPhoto(userId: number, file: File) {
+  const res = await fetch(`${API_URL}/users/${userId}/photo`, {
+    method: 'POST',
+    headers: { 'X-Filename': file.name },
+    body: file
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
