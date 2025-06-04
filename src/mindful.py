@@ -94,3 +94,44 @@ def get_challenge_progress(
     row = cur.fetchone()
     return row[0] if row else 0
 
+
+def log_session(
+    conn: sqlite3.Connection,
+    user_id: int,
+    duration: int,
+    session_type: str,
+    session_date: str,
+    *,
+    notes: str | None = None,
+    mood_before: int | None = None,
+    mood_after: int | None = None,
+) -> int:
+    """Insert a session and optional mood data and return the session ID."""
+
+    cur = conn.execute(
+        "INSERT INTO sessions (user_id, duration, session_type, session_date, notes) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (user_id, duration, session_type, session_date, notes),
+    )
+    session_id = cur.lastrowid
+
+    if mood_before is not None or mood_after is not None:
+        conn.execute(
+            "INSERT INTO moods (session_id, mood_before, mood_after) VALUES (?, ?, ?)",
+            (session_id, mood_before, mood_after),
+        )
+
+    conn.commit()
+    return session_id
+
+
+def get_user_moods(conn: sqlite3.Connection, user_id: int) -> list[tuple[int | None, int | None]]:
+    """Return ``(mood_before, mood_after)`` pairs for all of ``user_id``'s sessions."""
+
+    cur = conn.execute(
+        "SELECT m.mood_before, m.mood_after FROM moods m "
+        "JOIN sessions s ON m.session_id = s.id WHERE s.user_id = ?",
+        (user_id,),
+    )
+    return [(row[0], row[1]) for row in cur.fetchall()]
+
