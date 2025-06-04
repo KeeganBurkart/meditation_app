@@ -21,3 +21,16 @@ uvicorn backend.main:app --reload
 ```
 
 Open the printed local URL to use the timer, session form and other pages.
+
+## Deployment
+
+To create a production build of the web app, run:
+
+```bash
+cd web/frontend
+npm install
+npm run build
+```
+
+The compiled files are placed in `web/frontend/dist`. Copy this folder to any
+static web host or serve it with a CDN alongside the backend API.

@@ -1,15 +1,36 @@
 from __future__ import annotations
 
+import os
 import sqlite3
 from datetime import time
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+import logging
 from pydantic import BaseModel
 
 from src import auth, mindful, dashboard, relationships, activity, notifications, sessions as session_models
+from src import monitoring
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("mindful")
 
 app = FastAPI()
-conn = sqlite3.connect('mindful.db', check_same_thread=False)
-mindful.init_db(conn)
+
+db_url = os.getenv("DATABASE_URL")
+if db_url and db_url.startswith("postgresql"):
+    import psycopg2
+    conn = psycopg2.connect(db_url)
+    mindful.init_postgres_db(conn)
+else:
+    conn = sqlite3.connect('mindful.db', check_same_thread=False)
+    mindful.init_db(conn)
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info("%s %s", request.method, request.url.path)
+    response = await call_next(request)
+    logger.info("Completed %s", response.status_code)
+    return response
 
 feed = activity.ActivityFeed()
 notify_manager = notifications.NotificationManager()
@@ -46,6 +67,7 @@ class NotificationInput(BaseModel):
 @app.post('/auth/signup')
 def signup(data: SignUp):
     user_id = auth.register_user(conn, data.email, data.password, display_name=data.display_name)
+    monitoring.log_event("signup", {"user": user_id})
     return {"user_id": user_id}
 
 @app.post('/auth/login')
@@ -54,6 +76,7 @@ def login(data: Login):
     row = cur.fetchone()
     if not row or auth.hash_password(data.password) != row[1]:
         raise HTTPException(status_code=401, detail='Invalid credentials')
+    monitoring.log_event("login", {"user": row[0]})
     return {"user_id": row[0]}
 
 @app.post('/sessions')

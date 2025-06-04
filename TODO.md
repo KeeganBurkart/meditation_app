@@ -60,7 +60,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] UI tests for iOS and website
 
 ## 12. Deployment & Maintenance
-- [ ] Configure production environment for backend and database
-- [ ] Set up app store and website deployment pipelines
-- [ ] Monitor usage and gather feedback for future improvements
+- [x] Configure production environment for backend and database
+- [x] Set up app store and website deployment pipelines
+- [x] Monitor usage and gather feedback for future improvements
 
