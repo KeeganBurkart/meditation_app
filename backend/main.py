@@ -275,6 +275,8 @@ def create_session(
         mood_before=info.moodBefore,
         mood_after=info.moodAfter,
     )
+    # Record the session in the social feed. ActivityFeed.log_session only
+    # stores a text description and does not take the session ID.
     feed.log_session(current_user_id, f"{info.type} {info.duration}m")
     cur = conn.execute(
         "SELECT COUNT(*) FROM sessions WHERE user_id = ?",
