@@ -133,4 +133,98 @@ public struct APIClient {
             .map { _ in () }
             .eraseToAnyPublisher()
     }
+
+    // MARK: - Activity Feed
+    public func fetchFeed(authToken: String) async throws -> [FeedItem] {
+        var request = URLRequest(url: baseURL.appendingPathComponent("feed"))
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode([FeedItem].self, from: data)
+    }
+
+    public func addFeedComment(feedItemId: Int, text: String, authToken: String) async throws -> FeedItem {
+        let endpoint = "feed/\(feedItemId)/comment"
+        var request = URLRequest(url: baseURL.appendingPathComponent(endpoint))
+        request.httpMethod = "POST"
+        request.httpBody = try JSONEncoder().encode(["text": text])
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode(FeedItem.self, from: data)
+    }
+
+    public func addFeedEncouragement(feedItemId: Int, text: String, authToken: String) async throws -> FeedItem {
+        let endpoint = "feed/\(feedItemId)/encourage"
+        var request = URLRequest(url: baseURL.appendingPathComponent(endpoint))
+        request.httpMethod = "POST"
+        request.httpBody = try JSONEncoder().encode(["text": text])
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode(FeedItem.self, from: data)
+    }
+
+    // MARK: - Badges
+    public func fetchBadges(authToken: String) async throws -> [Badge] {
+        var request = URLRequest(url: baseURL.appendingPathComponent("users/me/badges"))
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode([Badge].self, from: data)
+    }
+
+    // MARK: - Private Challenges
+    public func fetchPrivateChallenges(authToken: String) async throws -> [Challenge] {
+        var request = URLRequest(url: baseURL.appendingPathComponent("users/me/private-challenges"))
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode([Challenge].self, from: data)
+    }
+
+    public func createPrivateChallenge(_ input: ChallengeInput, authToken: String) async throws -> Challenge {
+        var request = URLRequest(url: baseURL.appendingPathComponent("users/me/private-challenges"))
+        request.httpMethod = "POST"
+        request.httpBody = try JSONEncoder().encode(input)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode(Challenge.self, from: data)
+    }
+
+    public func updatePrivateChallenge(id: Int, input: ChallengeInput, authToken: String) async throws {
+        let endpoint = "users/me/private-challenges/\(id)"
+        var request = URLRequest(url: baseURL.appendingPathComponent(endpoint))
+        request.httpMethod = "PUT"
+        request.httpBody = try JSONEncoder().encode(input)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        _ = try await session.data(for: request)
+    }
+
+    public func deletePrivateChallenge(id: Int, authToken: String) async throws {
+        let endpoint = "users/me/private-challenges/\(id)"
+        var request = URLRequest(url: baseURL.appendingPathComponent(endpoint))
+        request.httpMethod = "DELETE"
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        _ = try await session.data(for: request)
+    }
+
+    // MARK: - Subscription
+    public func getSubscription(authToken: String) async throws -> Subscription {
+        var request = URLRequest(url: baseURL.appendingPathComponent("subscriptions/me"))
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        let (data, _) = try await session.data(for: request)
+        return try JSONDecoder().decode(Subscription.self, from: data)
+    }
+
+    // MARK: - Session Photo
+    public func uploadSessionPhoto(sessionId: Int, photoData: Data, filename: String, authToken: String) async throws {
+        let endpoint = "sessions/\(sessionId)/photo"
+        var request = URLRequest(url: baseURL.appendingPathComponent(endpoint))
+        request.httpMethod = "POST"
+        request.httpBody = photoData
+        request.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
+        request.setValue(filename, forHTTPHeaderField: "X-Filename")
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        _ = try await session.data(for: request)
+    }
 }

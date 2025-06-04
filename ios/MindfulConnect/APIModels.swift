@@ -24,10 +24,6 @@ public struct Challenge: Codable {
     public let endDate: String?
 }
 
-public struct Ad: Codable {
-    public let id: Int
-    public let text: String
-
 public struct SocialLoginRequest: Codable {
     public let provider: String
     public let token: String
@@ -65,4 +61,15 @@ public struct CreateMeditationTypeRequest: Codable {
 public struct UpdateMeditationTypeRequest: Codable {
     public let name: String
 
+}
+
+public struct ChallengeInput: Codable {
+    public let name: String
+    public let targetMinutes: Int
+    public let startDate: String
+    public let endDate: String
+}
+
+public struct Subscription: Codable {
+    public let tier: String
 }
