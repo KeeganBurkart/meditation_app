@@ -329,13 +329,11 @@ export async function updateProfileVisibility(isPublic: boolean) {
 
 export interface UserProfile {
   user_id: number;
-  display_name: string;
-  bio: string;
-  photo_url: string;
-  is_public: boolean;
+  display_name: string | null;
+  bio: string | null;
+  photo_url: string | null;
   total_minutes: number;
   session_count: number;
-  recent_activity: string[];
 }
 
 export async function getUserProfile(

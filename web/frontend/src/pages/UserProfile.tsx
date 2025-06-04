@@ -28,14 +28,7 @@ export default function UserProfile() {
         <p>Total Minutes: {profile.total_minutes}</p>
         <p>Sessions: {profile.session_count}</p>
       </section>
-      <section>
-        <h2>Recent Activity</h2>
-        <ul>
-          {profile.recent_activity.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
-      </section>
+      {/* Recent activity will be added in a future update */}
     </main>
   );
 }
