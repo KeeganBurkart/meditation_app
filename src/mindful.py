@@ -43,22 +43,48 @@ def init_postgres_db(conn: Any) -> None:
 
 def add_custom_meditation_type(
     conn: sqlite3.Connection, user_id: int, type_name: str
-) -> None:
-    """Insert a custom meditation type for the given user."""
-    conn.execute(
-        "INSERT INTO custom_meditation_types (user_id, type_name) VALUES (?, ?)",
+) -> int:
+    """Insert a custom meditation type for the given user and return its ID."""
+    cur = conn.execute(
+        "INSERT INTO custom_meditation_types (user_id, type_name) VALUES (?, ?) RETURNING id",
         (user_id, type_name),
+    )
+    type_id = cur.fetchone()[0]
+    conn.commit()
+    return type_id
+
+
+def get_custom_meditation_types(
+    conn: sqlite3.Connection, user_id: int
+) -> list[tuple[int, str]]:
+    """Return ``(id, type_name)`` tuples for ``user_id``."""
+    cur = conn.execute(
+        "SELECT id, type_name FROM custom_meditation_types WHERE user_id = ?",
+        (user_id,),
+    )
+    return [(row[0], row[1]) for row in cur.fetchall()]
+
+
+def update_custom_meditation_type(
+    conn: sqlite3.Connection, user_id: int, type_id: int, new_name: str
+) -> None:
+    """Update a user's custom meditation type name."""
+    conn.execute(
+        "UPDATE custom_meditation_types SET type_name = ? WHERE id = ? AND user_id = ?",
+        (new_name, type_id, user_id),
     )
     conn.commit()
 
 
-def get_custom_meditation_types(conn: sqlite3.Connection, user_id: int) -> list[str]:
-    """Return a list of custom meditation type names for ``user_id``."""
-    cur = conn.execute(
-        "SELECT type_name FROM custom_meditation_types WHERE user_id = ?",
-        (user_id,),
+def delete_custom_meditation_type(
+    conn: sqlite3.Connection, user_id: int, type_id: int
+) -> None:
+    """Delete a custom meditation type by ID for a user."""
+    conn.execute(
+        "DELETE FROM custom_meditation_types WHERE id = ? AND user_id = ?",
+        (type_id, user_id),
     )
-    return [row[0] for row in cur.fetchall()]
+    conn.commit()
 
 
 def create_challenge(

@@ -20,6 +20,7 @@ from src import (
     activity,
     notifications,
     subscriptions,
+    challenges,
     sessions as session_models,
     profiles,
     analytics,
@@ -36,6 +37,16 @@ from src.api_models import (
     StringValuePoint,
     LocationFrequencyResponse,
     AdResponse,
+    CustomTypeInput,
+    CustomTypeResponse,
+    BadgeResponse,
+    PrivateChallengeInput,
+    PrivateChallengeResponse,
+)
+from src.feed_models import (
+    CommentInput,
+    EncouragementInput,
+    FeedInteractionResponse,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -245,6 +256,13 @@ def create_session(
         mood_after=info.moodAfter,
     )
     feed.log_session(current_user_id, f"{info.type} {info.duration}m")
+    cur = conn.execute(
+        "SELECT COUNT(*) FROM sessions WHERE user_id = ?",
+        (current_user_id,),
+    )
+    count = cur.fetchone()[0]
+    if count == 1:
+        challenges.award_badge(conn, current_user_id, "First Session Completed")
     return {"session_id": session_id}
 
 
@@ -540,6 +558,132 @@ async def upload_my_photo(
         conn, current_user_id, photo_url
     )  # Assuming profiles.update_photo exists
     return {"photo_url": photo_url}
+
+
+@app.post("/users/me/custom-meditation-types", response_model=CustomTypeResponse)
+def create_custom_type(
+    data: CustomTypeInput, current_user_id: int = Depends(get_current_user)
+):
+    type_id = mindful.add_custom_meditation_type(
+        conn, current_user_id, data.type_name
+    )
+    return CustomTypeResponse(id=type_id, type_name=data.type_name)
+
+
+@app.get("/users/me/custom-meditation-types", response_model=list[CustomTypeResponse])
+def list_custom_types(current_user_id: int = Depends(get_current_user)):
+    types = mindful.get_custom_meditation_types(conn, current_user_id)
+    return [CustomTypeResponse(id=t[0], type_name=t[1]) for t in types]
+
+
+@app.put("/users/me/custom-meditation-types/{type_id}", response_model=CustomTypeResponse)
+def update_custom_type(
+    type_id: int,
+    data: CustomTypeInput,
+    current_user_id: int = Depends(get_current_user),
+):
+    mindful.update_custom_meditation_type(conn, current_user_id, type_id, data.type_name)
+    return CustomTypeResponse(id=type_id, type_name=data.type_name)
+
+
+@app.delete("/users/me/custom-meditation-types/{type_id}", response_model=dict)
+def delete_custom_type(type_id: int, current_user_id: int = Depends(get_current_user)):
+    mindful.delete_custom_meditation_type(conn, current_user_id, type_id)
+    return {"status": "deleted"}
+
+
+@app.get("/users/me/badges", response_model=list[BadgeResponse])
+def list_badges(current_user_id: int = Depends(get_current_user)):
+    badges = challenges.get_user_badges(conn, current_user_id)
+    return [BadgeResponse(badge_name=b[0], awarded_at=str(b[1])) for b in badges]
+
+
+@app.post("/users/me/private-challenges", response_model=PrivateChallengeResponse)
+def create_private_challenge(
+    data: PrivateChallengeInput, current_user_id: int = Depends(get_current_user)
+):
+    if not subscriptions.is_premium(conn, current_user_id):
+        raise HTTPException(status_code=403, detail="Premium membership required")
+    challenge_id = challenges.create_challenge(
+        conn,
+        name=data.name,
+        created_by=current_user_id,
+        is_private=True,
+        target_minutes=data.target_minutes,
+        start_date=data.start_date,
+        end_date=data.end_date,
+        description=data.description,
+    )
+    return PrivateChallengeResponse(
+        id=challenge_id,
+        name=data.name,
+        target_minutes=data.target_minutes,
+        start_date=data.start_date,
+        end_date=data.end_date,
+        created_by=current_user_id,
+        is_private=True,
+        description=data.description,
+    )
+
+
+@app.get("/users/me/private-challenges", response_model=list[PrivateChallengeResponse])
+def list_private_challenges(current_user_id: int = Depends(get_current_user)):
+    if not subscriptions.is_premium(conn, current_user_id):
+        raise HTTPException(status_code=403, detail="Premium membership required")
+    rows = challenges.get_private_challenges(conn, current_user_id)
+    return [
+        PrivateChallengeResponse(
+            id=r[0],
+            name=r[1],
+            target_minutes=r[2],
+            start_date=r[3],
+            end_date=r[4],
+            created_by=current_user_id,
+            is_private=True,
+            description=r[5],
+        )
+        for r in rows
+    ]
+
+
+@app.put("/users/me/private-challenges/{challenge_id}", response_model=PrivateChallengeResponse)
+def update_private_challenge(
+    challenge_id: int,
+    data: PrivateChallengeInput,
+    current_user_id: int = Depends(get_current_user),
+):
+    if not subscriptions.is_premium(conn, current_user_id):
+        raise HTTPException(status_code=403, detail="Premium membership required")
+    challenges.update_private_challenge(
+        conn,
+        current_user_id,
+        challenge_id,
+        data.name,
+        data.target_minutes,
+        data.start_date,
+        data.end_date,
+        description=data.description,
+    )
+    return PrivateChallengeResponse(
+        id=challenge_id,
+        name=data.name,
+        target_minutes=data.target_minutes,
+        start_date=data.start_date,
+        end_date=data.end_date,
+        created_by=current_user_id,
+        is_private=True,
+        description=data.description,
+    )
+
+
+@app.delete("/users/me/private-challenges/{challenge_id}", response_model=dict)
+def delete_private_challenge(
+    challenge_id: int, current_user_id: int = Depends(get_current_user)
+):
+    if not subscriptions.is_premium(conn, current_user_id):
+        raise HTTPException(status_code=403, detail="Premium membership required")
+    challenges.delete_private_challenge(conn, current_user_id, challenge_id)
+    return {"status": "deleted"}
 
 @app.get("/ads/random", response_model=AdResponse, responses={204: {"description": "No ad available"}})
 def get_random_ad() -> AdResponse | Response:
