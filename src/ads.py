@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
+from typing import Any, List
 import random
 
 
@@ -14,21 +14,28 @@ class Ad:
 
 
 class AdManager:
-    """In-memory ad rotation for the free tier."""
+    """Database-backed ad rotation for the free tier."""
 
-    def __init__(self) -> None:
-        self._ads: List[Ad] = []
-        self._counter = 0
+    def __init__(self, conn: Any) -> None:
+        self._conn = conn
 
-    def add_ad(self, text: str) -> int:
-        """Add an ad and return its identifier."""
-        self._counter += 1
-        ad = Ad(self._counter, text)
-        self._ads.append(ad)
-        return ad.ad_id
+    def add_ad(self, text: str, *, is_active: bool = True) -> int:
+        """Insert an ad into the ``advertisements`` table and return its ID."""
+        cur = self._conn.execute(
+            "INSERT INTO advertisements (text, is_active) VALUES (?, ?) RETURNING ad_id",
+            (text, int(is_active)),
+        )
+        ad_id = cur.fetchone()[0]
+        self._conn.commit()
+        return ad_id
 
     def get_random_ad(self) -> Ad:
-        """Return a random ad. Raises ``ValueError`` if none exist."""
-        if not self._ads:
+        """Return a random active ad. Raises ``ValueError`` if none exist."""
+        cur = self._conn.execute(
+            "SELECT ad_id, text FROM advertisements WHERE is_active = 1"
+        )
+        rows = cur.fetchall()
+        if not rows:
             raise ValueError("No ads available")
-        return random.choice(self._ads)
+        ad_id, text = random.choice(rows)
+        return Ad(ad_id, text)
