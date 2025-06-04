@@ -4,8 +4,8 @@ function getAuthHeader() {
   // Access tokens are stored in ``localStorage`` after login. When present we
   // send them as a ``Bearer`` token so protected endpoints authenticate the
   // current user.
-  const token = localStorage.getItem('token');
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export async function signup(
@@ -187,4 +187,166 @@ export async function getRandomAd(): Promise<Ad | null> {
   const res = await fetch(`${API_URL}/ads/random`, { headers: getAuthHeader() });
   if (!res.ok) return null;
   return res.json() as Promise<Ad>;
+  
+// ---------------------- Custom Meditation Types ----------------------
+
+export interface CustomMeditationType {
+  id: number;
+  type_name: string;
+}
+
+export async function createCustomType(
+  typeName: string,
+): Promise<CustomMeditationType | null> {
+  const res = await fetch(`${API_URL}/users/me/custom-meditation-types`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ type_name: typeName }),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function getCustomTypes(): Promise<CustomMeditationType[]> {
+  const res = await fetch(`${API_URL}/users/me/custom-meditation-types`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function updateCustomType(
+  id: number,
+  typeName: string,
+): Promise<void> {
+  await fetch(`${API_URL}/users/me/custom-meditation-types/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ type_name: typeName }),
+  });
+}
+
+export async function deleteCustomType(id: number): Promise<void> {
+  await fetch(`${API_URL}/users/me/custom-meditation-types/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeader(),
+  });
+}
+
+// ------------------------------- Badges -------------------------------
+
+export interface Badge {
+  name: string;
+}
+
+export async function getBadges(): Promise<Badge[]> {
+  const res = await fetch(`${API_URL}/users/me/badges`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// --------------------------- Private Challenges ---------------------------
+
+export interface PrivateChallenge {
+  id: number;
+  name: string;
+  target_minutes: number;
+  start_date: string;
+  end_date: string;
+}
+
+export interface ChallengeInput {
+  name: string;
+  target_minutes: number;
+  start_date: string;
+  end_date: string;
+}
+
+export async function createPrivateChallenge(
+  data: ChallengeInput,
+): Promise<PrivateChallenge | null> {
+  const res = await fetch(`${API_URL}/users/me/private-challenges`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function getPrivateChallenges(): Promise<PrivateChallenge[]> {
+  const res = await fetch(`${API_URL}/users/me/private-challenges`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function updatePrivateChallenge(
+  id: number,
+  data: ChallengeInput,
+): Promise<void> {
+  await fetch(`${API_URL}/users/me/private-challenges/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deletePrivateChallenge(id: number): Promise<void> {
+  await fetch(`${API_URL}/users/me/private-challenges/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeader(),
+  });
+
+// --- Mocked Social & Profile APIs ---
+
+export async function socialLogin(
+  provider: string,
+  token: string,
+): Promise<string | null> {
+  // Simulate a network delay then resolve a fake token
+  return new Promise((resolve) => {
+    setTimeout(() => resolve("mock_access_token"), 300);
+  });
+}
+
+export async function updateProfileVisibility(isPublic: boolean) {
+  // Placeholder mock implementation
+  return new Promise((resolve) => setTimeout(resolve, 200));
+}
+
+export interface UserProfile {
+  user_id: number;
+  display_name: string;
+  bio: string;
+  photo_url: string;
+  is_public: boolean;
+  total_minutes: number;
+  session_count: number;
+  recent_activity: string[];
+}
+
+export async function getUserProfile(
+  userId: string,
+): Promise<UserProfile | null> {
+  // Return mock profile data
+  return new Promise((resolve) =>
+    setTimeout(
+      () =>
+        resolve({
+          user_id: Number(userId),
+          display_name: "Mock User",
+          bio: "This is a mock profile.",
+          photo_url: "",
+          is_public: true,
+          total_minutes: 123,
+          session_count: 45,
+          recent_activity: ["Meditated for 10 minutes", "Completed challenge"],
+        }),
+      200,
+    ),
+  );
 }

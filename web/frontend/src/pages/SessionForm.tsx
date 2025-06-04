@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { logSession } from "../services/api";
+import { useState, useEffect } from "react";
+import { logSession, getCustomTypes, CustomMeditationType } from "../services/api";
 
 export default function SessionForm() {
   const [form, setForm] = useState({
@@ -12,9 +12,14 @@ export default function SessionForm() {
     moodBefore: 5,
     moodAfter: 5,
   });
+  const [types, setTypes] = useState<CustomMeditationType[]>([]);
+
+  useEffect(() => {
+    getCustomTypes().then(setTypes);
+  }, []);
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -64,12 +69,19 @@ export default function SessionForm() {
         </label>
         <label>
           Meditation Type
-          <input
+          <select
             name="type"
             value={form.type}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">Select</option>
+            {types.map((t) => (
+              <option key={t.id} value={t.type_name}>
+                {t.type_name}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
           Location
