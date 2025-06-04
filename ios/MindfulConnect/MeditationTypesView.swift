@@ -49,8 +49,8 @@ struct MeditationTypesView_Previews: PreviewProvider {
         let vm = AppViewModel()
         vm.authToken = "token"
         vm.meditationTypes = [
-            MeditationType(id: UUID(), name: "Breathing"),
-            MeditationType(id: UUID(), name: "Walking")
+            MeditationType(id: "1", name: "Breathing"),
+            MeditationType(id: "2", name: "Walking")
         ]
         return MeditationTypesView().environmentObject(vm)
     }

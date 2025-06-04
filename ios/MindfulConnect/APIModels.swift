@@ -71,25 +71,41 @@ public struct SocialLoginResponse: Codable {
 }
 
 public struct ProfileVisibilityRequest: Codable {
-    public let visibility: String
+    public let isPublic: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case isPublic = "is_public"
+    }
 }
 
 public struct ProfileVisibilityResponse: Codable {
-    public let user: UserProfile
+    public let status: String
 }
 
 public struct MeditationType: Codable, Identifiable {
-    public let id: UUID
+    public let id: String
     public let name: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name = "type_name"
+    }
 }
 
 public struct CreateMeditationTypeRequest: Codable {
     public let name: String
+
+    enum CodingKeys: String, CodingKey {
+        case name = "type_name"
+    }
 }
 
 public struct UpdateMeditationTypeRequest: Codable {
     public let name: String
 
+    enum CodingKeys: String, CodingKey {
+        case name = "type_name"
+    }
 }
 
 public struct DateValuePoint: Codable {

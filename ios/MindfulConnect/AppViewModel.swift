@@ -35,9 +35,9 @@ public class AppViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    public func updateVisibility(to visibility: String) {
+    public func updateVisibility(isPublic: Bool) {
         guard let token = authToken else { return }
-        let request = ProfileVisibilityRequest(visibility: visibility)
+        let request = ProfileVisibilityRequest(isPublic: isPublic)
         isLoading = true
         api.updateProfileVisibility(request, authToken: token)
             .sink(receiveCompletion: { [weak self] completion in
@@ -46,8 +46,8 @@ public class AppViewModel: ObservableObject {
                 if case .failure(let error) = completion {
                     self.errorMessage = error.localizedDescription
                 }
-            }, receiveValue: { [weak self] response in
-                self?.user = response.user
+            }, receiveValue: { [weak self] in
+                self?.user?.visibility = isPublic ? "public" : "private"
             })
             .store(in: &cancellables)
     }
@@ -85,7 +85,7 @@ public class AppViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    public func deleteMeditationType(id: UUID) {
+    public func deleteMeditationType(id: String) {
         guard let token = authToken else { return }
         isLoading = true
         api.deleteMeditationType(id: id, authToken: token)
