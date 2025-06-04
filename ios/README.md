@@ -24,3 +24,23 @@ xcodebuild test -project MindfulConnect.xcodeproj \
 ```
 
 The command builds the app and executes the `MindfulConnectUITests` target.
+
+## Networking Layer
+
+`APIClient` in `MindfulConnect` provides Combine publishers for the mocked backend
+endpoints. It includes calls for social login, updating profile visibility and
+managing custom meditation types. `MockAPIClient` returns sample data so the app
+can be developed without running the server.
+
+## SwiftUI Screens
+
+The minimal SwiftUI interface demonstrates how the new networking layer can be used.
+`SocialLoginView` performs a mocked social login and stores the resulting auth token
+in `AppViewModel`. `ProfileSettingsView` exposes a toggle to change profile
+visibility, while `MeditationTypesView` lists and lets you add or delete custom
+meditation types.
+
+`MindfulConnectApp` sets up the shared `AppViewModel` and shows `ContentView`,
+which switches between the login screen and the main settings views once
+authenticated.
+
