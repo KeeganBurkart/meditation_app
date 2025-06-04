@@ -47,3 +47,6 @@ jobs:
         pip install -r requirements.txt
     - name: Run Python tests
       run: pytest -v
+    - name: Run e2e tests
+      run: |
+        cd web/frontend && npm run e2e
