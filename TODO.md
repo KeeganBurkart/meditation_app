@@ -26,7 +26,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 
 ## 5. Social & Community Features
 - [x] Implement follow/unfollow system
-- [ ] Create activity feed with ability to give encouragement and comments
+- [x] Create activity feed with ability to give encouragement and comments
 - [ ] Respect privacy settings when displaying session details
 
 - [x] Build streak and duration challenge mechanisms
