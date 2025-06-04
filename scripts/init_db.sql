@@ -63,3 +63,14 @@ CREATE TABLE IF NOT EXISTS challenges (
     FOREIGN KEY(created_by) REFERENCES users(id)
 );
 
+-- Table to store follow relationships between users
+CREATE TABLE IF NOT EXISTS follows (
+    follower_id INTEGER NOT NULL,
+    followed_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, followed_id),
+    FOREIGN KEY(follower_id) REFERENCES users(id),
+    FOREIGN KEY(followed_id) REFERENCES users(id)
+);
+
+
