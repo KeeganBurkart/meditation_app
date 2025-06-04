@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Dict, Set, Optional
+import sqlite3
 
 
 @dataclass
@@ -18,12 +19,11 @@ class FeedItem:
 
 
 class ActivityFeed:
-    """In-memory activity feed showing friends' sessions and interactions."""
+    """Database-backed activity feed for social interactions."""
 
-    def __init__(self) -> None:
-        self._items: List[FeedItem] = []
+    def __init__(self, conn: sqlite3.Connection) -> None:
+        self._conn = conn
         self._friends: Dict[int, Set[int]] = {}
-        self._counter = 0
 
     def add_friend(self, user_id: int, friend_id: int) -> None:
         """Establish a friendship so ``user_id`` sees ``friend_id`` in their feed."""
@@ -31,27 +31,45 @@ class ActivityFeed:
 
     def log_session(self, user_id: int, description: str) -> int:
         """Add a meditation session entry."""
-        self._counter += 1
-        item = FeedItem(self._counter, user_id, "session", description, datetime.utcnow())
-        self._items.append(item)
-        return item.item_id
+        cur = self._conn.execute(
+            "INSERT INTO activity_feed (user_id, item_type, message, timestamp) VALUES (?, ?, ?, ?)",
+            (user_id, "session", description, datetime.utcnow()),
+        )
+        self._conn.commit()
+        return cur.lastrowid
 
     def add_comment(self, user_id: int, target_user_id: int, text: str) -> int:
         """Post a comment directed at ``target_user_id``."""
-        self._counter += 1
-        item = FeedItem(self._counter, user_id, "comment", text, datetime.utcnow(), target_user_id)
-        self._items.append(item)
-        return item.item_id
+        cur = self._conn.execute(
+            "INSERT INTO activity_feed (user_id, item_type, message, timestamp, target_user_id) VALUES (?, ?, ?, ?, ?)",
+            (user_id, "comment", text, datetime.utcnow(), target_user_id),
+        )
+        self._conn.commit()
+        return cur.lastrowid
 
     def add_encouragement(self, user_id: int, target_user_id: int, text: str) -> int:
         """Send encouragement to ``target_user_id``."""
-        self._counter += 1
-        item = FeedItem(self._counter, user_id, "encouragement", text, datetime.utcnow(), target_user_id)
-        self._items.append(item)
-        return item.item_id
+        cur = self._conn.execute(
+            "INSERT INTO activity_feed (user_id, item_type, message, timestamp, target_user_id) VALUES (?, ?, ?, ?, ?)",
+            (user_id, "encouragement", text, datetime.utcnow(), target_user_id),
+        )
+        self._conn.commit()
+        return cur.lastrowid
 
     def get_feed(self, user_id: int, limit: int = 10) -> List[FeedItem]:
         """Return recent feed items from the user's friends."""
         friends = self._friends.get(user_id, set())
-        items = [i for i in self._items if i.user_id in friends]
-        return sorted(items, key=lambda i: i.timestamp, reverse=True)[:limit]
+        if not friends:
+            return []
+        placeholders = ",".join("?" for _ in friends)
+        query = (
+            f"SELECT id, user_id, item_type, message, timestamp, target_user_id "
+            f"FROM activity_feed WHERE user_id IN ({placeholders}) "
+            f"ORDER BY timestamp DESC LIMIT ?"
+        )
+        cur = self._conn.execute(query, (*friends, limit))
+        rows = cur.fetchall()
+        return [
+            FeedItem(r[0], r[1], r[2], r[3], datetime.fromisoformat(r[4]) if isinstance(r[4], str) else r[4], r[5])
+            for r in rows
+        ]
