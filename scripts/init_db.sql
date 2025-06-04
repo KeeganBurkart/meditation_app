@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS user_notifications (
     message TEXT,
     is_enabled INTEGER DEFAULT 1,
     FOREIGN KEY(user_id) REFERENCES users(id)
+);
 
 -- Social activity feed items
 CREATE TABLE IF NOT EXISTS activity_feed (
@@ -129,6 +130,7 @@ CREATE TABLE IF NOT EXISTS activity_feed (
     FOREIGN KEY(user_id) REFERENCES users(id),
     FOREIGN KEY(target_user_id) REFERENCES users(id),
     FOREIGN KEY(related_session_id) REFERENCES sessions(id)
+);
   
 -- Advertisements for in-app promotions or announcements
 CREATE TABLE IF NOT EXISTS advertisements (

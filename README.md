@@ -14,7 +14,6 @@ Mindful Connect is a meditation tracking and social platform consisting of an iO
 
 ## Community Challenges
 Mindful Connect supports community meditation challenges where users can join and log their progress toward a shared goal. The helper functions in `src/mindful.py` manage challenge creation, participation, and minute tracking.
-A small HTML/JavaScript timer is included under the `web/` folder so the basic timing functionality can also be used in the browser. Open `web/index.html` to try it locally. A simple profile page is available at `web/profile.html` to view user stats stored in the browser.
 
 ## Technology Stack
 
@@ -29,8 +28,7 @@ The following tools and frameworks will be used for the project:
 - **Framework**: React with TypeScript
 - **Routing**: React Router
 - **Styling**: CSS Modules or styled-components
-- A simple HTML form for logging meditation sessions is available at
-  `web/session_form.html`.
+- The web frontend lives under `web/frontend`.
 
 ### Backend
 - **Language**: Python 3.10
@@ -51,8 +49,12 @@ Install Node dependencies inside `web/frontend` and run the Vite dev server:
 ```bash
 cd web/frontend
 npm install
+# copy the example environment file and set your backend URL if needed
+cp .env.example .env
 npm run dev
 ```
+
+The `.env` file contains a `VITE_API_URL` variable that should point to your backend API. By default it targets `http://localhost:8000`.
 
 The backend API can be started with:
 

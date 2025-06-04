@@ -8,11 +8,25 @@ public struct MeditationSession: Codable {
 }
 
 public class SessionLogger {
-    public init() {}
+    private let storageURL: URL
+
+    public init(storageURL: URL? = nil) {
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        self.storageURL = storageURL ?? documents.appendingPathComponent("sessions.json")
+    }
 
     public func log(session: MeditationSession) {
-        // In a real application, this would persist to local storage or send to a backend.
-        print("Logged session of \(session.duration) seconds")
+        do {
+            var sessions: [MeditationSession] = []
+            if let data = try? Data(contentsOf: storageURL) {
+                sessions = try JSONDecoder().decode([MeditationSession].self, from: data)
+            }
+            sessions.append(session)
+            let encoded = try JSONEncoder().encode(sessions)
+            try encoded.write(to: storageURL, options: .atomic)
+        } catch {
+            print("Failed to log session: \(error)")
+        }
     }
 }
 

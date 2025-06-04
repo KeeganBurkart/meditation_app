@@ -28,14 +28,16 @@ def init_db(conn: sqlite3.Connection) -> None:
 
 def init_postgres_db(conn: Any) -> None:
     """Initialize a PostgreSQL database using ``init_db_postgres.sql``."""
-    script_path = Path(__file__).resolve().parents[1] / "scripts" / "init_db_postgres.sql"
+    script_path = (
+        Path(__file__).resolve().parents[1] / "scripts" / "init_db_postgres.sql"
+    )
     with open(script_path, "r", encoding="utf-8") as f:
         sql = f.read()
     cur = conn.cursor()
-    for statement in sql.split(';'):
+    for statement in sql.split(";"):
         stmt = statement.strip()
         if stmt:
-            cur.execute(stmt + ';')
+            cur.execute(stmt + ";")
     conn.commit()
 
 
@@ -143,7 +145,9 @@ def log_session(
     return session_id
 
 
-def get_user_moods(conn: sqlite3.Connection, user_id: int) -> list[tuple[int | None, int | None]]:
+def get_user_moods(
+    conn: sqlite3.Connection, user_id: int
+) -> list[tuple[int | None, int | None]]:
     """Return ``(mood_before, mood_after)`` pairs for all of ``user_id``'s sessions."""
 
     cur = conn.execute(
@@ -152,4 +156,3 @@ def get_user_moods(conn: sqlite3.Connection, user_id: int) -> list[tuple[int | N
         (user_id,),
     )
     return [(row[0], row[1]) for row in cur.fetchall()]
-
