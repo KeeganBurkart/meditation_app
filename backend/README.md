@@ -13,7 +13,11 @@ A small FastAPI application is provided to experiment with the web frontend.
    ```bash
    pip install -r requirements.txt fastapi uvicorn pydantic
    ```
-3. (Optional) set the `DB_FILE` environment variable to override the SQLite database path. If unset it defaults to `mindful.db`.
+3. Initialize the database:
+   ```bash
+   ./scripts/setup_database.sh
+   ```
+   Or set the `DATABASE_URL` environment variable to connect to a PostgreSQL instance.
 4. Start the server:
    ```bash
    uvicorn backend.main:app --reload

@@ -6,7 +6,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [x] Establish a repository structure for iOS, web, and backend services
 - [x] Select technology stack (Swift for iOS, React for web, and Python 3 with FastAPI for the backend)
 - [x] Configure continuous integration and testing
-- [ ] Set up initial database schema
+- [x] Set up initial database schema
 
 ## 2. Authentication & User Accounts
 - [x] Build user profile pages showing photo, bio, stats, and recent activity
@@ -14,23 +14,23 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [x] Add privacy settings for profile visibility
 
 ## 3. Meditation Logging
-- [ ] Design data model for sessions (duration, type, time of day, date, location)
+- [x] Design data model for sessions (duration, type, time of day, date, location)
 - [x] Create forms for manual entry of session details
 - [x] Enable optional photo upload and notes
-- [ ] Support custom meditation types
+- [x] Support custom meditation types
 - [x] (Optional) Build in‑app timer for automatic logging on iOS
 
 ## 4. Mood Tracking
-- [ ] Allow users to record mood before and after each session
-- [ ] Store mood data for later correlation analysis
+- [x] Allow users to record mood before and after each session
+- [x] Store mood data for later correlation analysis
 
 ## 5. Social & Community Features
 - [x] Implement follow/unfollow system
 - [x] Create activity feed with ability to give encouragement and comments
-- [ ] Respect privacy settings when displaying session details
+- [x] Respect privacy settings when displaying session details
 
 - [x] Build streak and duration challenge mechanisms
-- [ ] Add community challenge tracking
+- [x] Add community challenge tracking
 - [x] Award badges and achievements
 - [x] (Premium) Allow users to create private challenges
 
@@ -55,9 +55,9 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [x] Write copy in a supportive and encouraging tone
 
 ## 11. Testing & Quality Assurance
-- [ ] Unit tests for backend logic and data models
-- [ ] Integration tests for API endpoints
-- [ ] UI tests for iOS and website
+- [x] Unit tests for backend logic and data models
+- [x] Integration tests for API endpoints
+- [x] UI tests for iOS and website
 
 ## 12. Deployment & Maintenance
 - [x] Configure production environment for backend and database

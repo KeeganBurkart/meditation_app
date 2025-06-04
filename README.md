@@ -5,8 +5,10 @@ Mindful Connect is a meditation tracking and social platform consisting of an iO
 ## Features
 
 - Track meditation sessions and moods
+- Create custom meditation types
 - Earn badges for completing challenges
 - Create challenges with optional private visibility
+- Participate in community challenges with progress tracking
 - Personalized activity feed that respects user privacy settings
 - Follow other users and manage your network
 - Activity feed to view friends' sessions and send encouragement
@@ -72,6 +74,16 @@ Install the backend Python dependencies before running the API or tests:
 python -m pip install -r requirements.txt
 # passlib is required for password hashing
 ```
+
+Initialize the SQLite database with:
+
+```bash
+./scripts/setup_database.sh
+```
+
+Alternatively set the `DATABASE_URL` environment variable to point to a
+PostgreSQL instance. The backend will automatically create the schema using
+`scripts/init_db_postgres.sql`.
 
 With the requirements installed, the test suite can be executed using:
 

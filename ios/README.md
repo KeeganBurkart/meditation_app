@@ -25,6 +25,13 @@ xcodebuild test -project MindfulConnect.xcodeproj \
 
 The command builds the app and executes the `MindfulConnectUITests` target.
 
+## Running the App
+
+Open `MindfulConnect.xcodeproj` in Xcode and run the **MindfulConnect** scheme
+on the simulator of your choice. The networking layer defaults to
+`http://localhost:8000` for backend requests. Update `APIClient` if your backend
+runs elsewhere.
+
 ## Networking Layer
 
 `APIClient` and the models in `APIModels.swift` provide mocked networking
