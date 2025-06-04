@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS sessions (
     duration INTEGER NOT NULL,
     session_type TEXT NOT NULL,
     session_date DATE NOT NULL,
+    session_time TEXT,
+    location TEXT,
     notes TEXT,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );

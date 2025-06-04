@@ -21,6 +21,8 @@ def test_log_and_retrieve_moods():
         duration=10,
         session_type="Guided",
         session_date="2023-01-01",
+        session_time="06:00",
+        location="Home",
         mood_before=3,
         mood_after=7,
     )

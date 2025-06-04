@@ -115,6 +115,8 @@ def log_session(
     duration: int,
     session_type: str,
     session_date: str,
+    session_time: str | None = None,
+    location: str | None = None,
     *,
     notes: str | None = None,
     mood_before: int | None = None,
@@ -123,9 +125,9 @@ def log_session(
     """Insert a session and optional mood data and return the session ID."""
 
     cur = conn.execute(
-        "INSERT INTO sessions (user_id, duration, session_type, session_date, notes) "
-        "VALUES (?, ?, ?, ?, ?)",
-        (user_id, duration, session_type, session_date, notes),
+        "INSERT INTO sessions (user_id, duration, session_type, session_date, session_time, location, notes) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (user_id, duration, session_type, session_date, session_time, location, notes),
     )
     session_id = cur.lastrowid
 

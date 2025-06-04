@@ -87,6 +87,8 @@ def create_session(info: SessionInput):
         info.duration,
         info.type,
         info.date,
+        session_time=info.time,
+        location=info.location,
         notes=info.notes,
         mood_before=info.moodBefore,
         mood_after=info.moodAfter,
@@ -96,9 +98,21 @@ def create_session(info: SessionInput):
 
 @app.get('/dashboard/{user_id}')
 def get_dashboard(user_id: int):
-    cur = conn.execute('SELECT duration, session_type, session_date FROM sessions WHERE user_id = ?', (user_id,))
+    cur = conn.execute(
+        'SELECT duration, session_type, session_date, session_time, location FROM sessions WHERE user_id = ?',
+        (user_id,)
+    )
     records = cur.fetchall()
-    sess = [session_models.MeditationSession(r[0], r[1], time(0,0), session_date=r[2], location='') for r in records]
+    sess = [
+        session_models.MeditationSession(
+            r[0],
+            r[1],
+            time.fromisoformat(r[3]) if r[3] else time(0, 0),
+            session_date=r[2],
+            location=r[4] or ''
+        )
+        for r in records
+    ]
     total = dashboard.calculate_total_time(sess)
     count = dashboard.calculate_session_count(sess)
     streak = dashboard.calculate_current_streak(sess)
