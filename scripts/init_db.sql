@@ -107,3 +107,10 @@ CREATE TABLE IF NOT EXISTS challenge_progress (
     FOREIGN KEY(user_id) REFERENCES users(id),
     FOREIGN KEY(challenge_id) REFERENCES community_challenges(id)
 );
+
+-- Advertisements for in-app promotions or announcements
+CREATE TABLE IF NOT EXISTS advertisements (
+    ad_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL,
+    is_active INTEGER DEFAULT 1
+);

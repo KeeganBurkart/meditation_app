@@ -78,3 +78,10 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     end_date DATE,
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
+
+-- Advertisements for in-app promotions or announcements
+CREATE TABLE IF NOT EXISTS advertisements (
+    ad_id SERIAL PRIMARY KEY,
+    text TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE
+);
