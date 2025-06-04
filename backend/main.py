@@ -24,6 +24,11 @@ from src import (
     profiles,
 )
 from src import monitoring
+from src.feed_models import (
+    CommentInput,
+    EncouragementInput,
+    FeedInteractionResponse,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mindful")
@@ -169,9 +174,8 @@ def create_session(
         mood_before=info.moodBefore,
         mood_after=info.moodAfter,
     )
-    # Assuming feed.log_session was updated to work with DB
-    # and potentially accepts session_id
-    feed.log_session(current_user_id, f"{info.type} {info.duration}m", session_id)
+    # Record the session in the activity feed
+    feed.log_session(current_user_id, f"{info.type} {info.duration}m")
     return {"session_id": session_id}
 
 
@@ -197,10 +201,10 @@ def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
     count = dashboard.calculate_session_count(sess)
     streak = dashboard.calculate_current_streak(sess)
     return {
-        "total_time": total,
-        "session_count": count,
-        "current_streak": streak,
-    }  # More descriptive keys
+        "total": total,
+        "sessions": count,
+        "streak": streak,
+    }
 
 
 @app.get("/feed", response_model=list)  # Changed path to /feed, user_id from token
@@ -218,12 +222,11 @@ def get_user_feed(current_user_id: int = Depends(get_current_user)):
     # how many user ids we're querying for. SQLite requires ``?`` for each value.
     placeholders = ",".join("?" for _ in user_ids_for_feed)
 
-    # Assumes 'feed_items' table and 'users.is_public' column exist. If the
-    # ``ActivityFeed`` class handles its own DB queries this will need to match
-    # that implementation.
+    # ``activity_feed`` table stores all social feed items. Ensure the query
+    # matches the schema defined in scripts/init_db.sql and ActivityFeed.
     query = (
         "SELECT f.id, f.user_id, u.display_name, f.item_type, f.message, f.timestamp, f.target_user_id "
-        "FROM feed_items f JOIN users u ON f.user_id = u.id "
+        "FROM activity_feed f JOIN users u ON f.user_id = u.id "
         f"WHERE f.user_id IN ({placeholders}) AND (u.is_public = 1 OR f.user_id = ?) "  # Check privacy or own item
         "ORDER BY f.timestamp DESC, f.id DESC LIMIT 20"  # Increased limit
     )
@@ -244,6 +247,57 @@ def get_user_feed(current_user_id: int = Depends(get_current_user)):
         }
         for r in rows
     ]
+
+
+@app.post("/feed/{feed_item_id}/comment", response_model=FeedInteractionResponse)
+def comment_on_feed_item(
+    feed_item_id: int,
+    data: CommentInput,
+    current_user_id: int = Depends(get_current_user),
+):
+    """Add a comment to a feed item."""
+    # Ensure the request body feed_item_id matches the URL parameter
+    if data.feed_item_id != feed_item_id:
+        raise HTTPException(status_code=400, detail="Mismatched feed_item_id")
+
+    cur = conn.execute(
+        "SELECT user_id FROM activity_feed WHERE id = ?",
+        (feed_item_id,),
+    )
+    row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Feed item not found")
+    target_user_id = row[0]
+    interaction_id = feed.add_comment(current_user_id, target_user_id, data.text)
+    return FeedInteractionResponse(
+        interaction_id=interaction_id, message="Comment added"
+    )
+
+
+@app.post("/feed/{feed_item_id}/encourage", response_model=FeedInteractionResponse)
+def encourage_feed_item(
+    feed_item_id: int,
+    data: EncouragementInput,
+    current_user_id: int = Depends(get_current_user),
+):
+    """Send encouragement related to a feed item."""
+    if data.feed_item_id != feed_item_id:
+        raise HTTPException(status_code=400, detail="Mismatched feed_item_id")
+
+    cur = conn.execute(
+        "SELECT user_id FROM activity_feed WHERE id = ?",
+        (feed_item_id,),
+    )
+    row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Feed item not found")
+    target_user_id = row[0]
+    interaction_id = feed.add_encouragement(
+        current_user_id, target_user_id, data.text
+    )
+    return FeedInteractionResponse(
+        interaction_id=interaction_id, message="Encouragement sent"
+    )
 
 
 @app.post("/follow", response_model=dict)
