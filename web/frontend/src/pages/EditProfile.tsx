@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { updateBio, uploadPhoto } from '../services/api';
+import { useState } from "react";
+import { updateBio, uploadPhoto } from "../services/api";
 
 export default function EditProfile() {
-  const [bio, setBio] = useState('');
+  const [bio, setBio] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -11,7 +11,7 @@ export default function EditProfile() {
     if (file) {
       await uploadPhoto(file);
     }
-    alert('Profile updated');
+    alert("Profile updated");
   }
 
   return (
@@ -20,11 +20,14 @@ export default function EditProfile() {
       <form onSubmit={handleSubmit}>
         <label>
           Bio
-          <textarea value={bio} onChange={e => setBio(e.target.value)} />
+          <textarea value={bio} onChange={(e) => setBio(e.target.value)} />
         </label>
         <label>
           Photo
-          <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
+          <input
+            type="file"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+          />
         </label>
         <button type="submit">Save</button>
       </form>
