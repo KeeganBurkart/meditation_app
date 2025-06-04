@@ -4,68 +4,37 @@ struct ActivityFeedView: View {
     @EnvironmentObject var viewModel: AppViewModel
     @State private var feedItems: [FeedItem] = []
     @State private var newMessage: String = ""
-    @State private var targetUserId: Int = 0
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var targetItemId: Int = 0
     private let api = APIClient()
 
     var body: some View {
         VStack {
             List(feedItems, id: \.id) { item in
-                VStack(alignment: .leading) {
-                    Text(item.message)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("\(item.userDisplayName): \(item.message)")
                         .font(.body)
                     if let target = item.targetUserId {
                         Text("-> User \(target)")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                }
-            }
-            HStack {
-                TextField("Say something", text: $newMessage)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                Button("Comment") {
-                    Task {
-                        isLoading = true
-                        do {
-                            let item = try await MockAPIClient.shared.sendComment(newMessage, from: 1, to: targetUserId)
-                            feedItems.insert(item, at: 0)
-                            newMessage = ""
-                        } catch {
-                            errorMessage = error.localizedDescription
+                    HStack {
+                        Button("Comment") {
+                            Task { await postComment(for: item) }
                         }
-                        isLoading = false
-                    }
-                }
-                Button("Encourage") {
-                    Task {
-                        isLoading = true
-                        do {
-                            let item = try await MockAPIClient.shared.sendEncouragement(newMessage, from: 1, to: targetUserId)
-                            feedItems.insert(item, at: 0)
-                            newMessage = ""
-                        } catch {
-                            errorMessage = error.localizedDescription
+                        Button("Encourage") {
+                            Task { await postEncouragement(for: item) }
                         }
-                        isLoading = false
                     }
                 }
             }
-            .padding()
+            TextField("Say something", text: $newMessage)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
         }
         .onAppear {
-            Task {
-                isLoading = true
-                do {
-                    let items = try await MockAPIClient.shared.fetchFeed()
-                    feedItems = items
-                } catch {
-                    errorMessage = error.localizedDescription
-                }
-                isLoading = false
-            }
+            Task { await loadFeed() }
         }
         .overlay {
             if isLoading { ProgressView() }
@@ -75,6 +44,43 @@ struct ActivityFeedView: View {
         } message: {
             Text(errorMessage ?? "")
         }
+    }
+
+    private func loadFeed() async {
+        guard let token = viewModel.authToken else { return }
+        isLoading = true
+        do {
+            feedItems = try await api.fetchFeed(authToken: token)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+
+    private func postComment(for item: FeedItem) async {
+        guard !newMessage.isEmpty, let token = viewModel.authToken else { return }
+        isLoading = true
+        do {
+            _ = try await api.addFeedComment(feedItemId: item.id, text: newMessage, authToken: token)
+            newMessage = ""
+            feedItems = try await api.fetchFeed(authToken: token)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
+    }
+
+    private func postEncouragement(for item: FeedItem) async {
+        guard !newMessage.isEmpty, let token = viewModel.authToken else { return }
+        isLoading = true
+        do {
+            _ = try await api.addFeedEncouragement(feedItemId: item.id, text: newMessage, authToken: token)
+            newMessage = ""
+            feedItems = try await api.fetchFeed(authToken: token)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
 }
 

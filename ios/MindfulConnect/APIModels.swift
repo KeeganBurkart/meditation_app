@@ -1,12 +1,25 @@
 import Foundation
 
-public struct FeedItem: Codable {
+public struct FeedItem: Codable, Identifiable {
     public let id: Int
     public let userId: Int
+    public let userDisplayName: String
     public let itemType: String
     public let message: String
     public let timestamp: Date
     public let targetUserId: Int?
+    public let relatedFeedItemId: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case id = "item_id"
+        case userId = "user_id"
+        case userDisplayName = "user_display_name"
+        case itemType = "item_type"
+        case message
+        case timestamp
+        case targetUserId = "target_user_id"
+        case relatedFeedItemId = "related_feed_item_id"
+    }
 }
 
 public struct Badge: Codable {
@@ -134,4 +147,34 @@ public struct ChallengeInput: Codable {
 public struct Subscription: Codable {
     public let tier: String
 
+}
+
+public struct FeedInteractionResponse: Codable {
+    public let interactionId: Int
+    public let message: String
+
+    enum CodingKeys: String, CodingKey {
+        case interactionId = "interaction_id"
+        case message
+    }
+}
+
+public struct CommentInput: Codable {
+    public let feedItemId: Int
+    public let text: String
+
+    enum CodingKeys: String, CodingKey {
+        case feedItemId = "feed_item_id"
+        case text
+    }
+}
+
+public struct EncouragementInput: Codable {
+    public let feedItemId: Int
+    public let text: String
+
+    enum CodingKeys: String, CodingKey {
+        case feedItemId = "feed_item_id"
+        case text
+    }
 }
