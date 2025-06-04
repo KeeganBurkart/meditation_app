@@ -87,7 +87,7 @@ class ActivityFeed:
         query = (
             f"SELECT id, user_id, item_type, message, timestamp, target_user_id, related_feed_item_id "
             f"FROM activity_feed WHERE user_id IN ({placeholders}) "
-            f"ORDER BY timestamp DESC LIMIT ?"
+            f"ORDER BY timestamp DESC, id DESC LIMIT ?"
         )
         cur = self._conn.execute(query, (*friends, limit))
         rows = cur.fetchall()
