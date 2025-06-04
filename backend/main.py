@@ -137,13 +137,11 @@ def create_session(info: SessionInput, current_user_id: int = Depends(get_curren
     feed.log_session(current_user_id, f"{info.type} {info.duration}m", session_id)
     return {"session_id": session_id}
 
-@app.get('/dashboard/{user_id_param}', response_model=dict) # Added response_model, renamed path param
-def get_dashboard_data(user_id_param: int, current_user_id: int = Depends(get_current_user)): # Renamed
-    if user_id_param != current_user_id:
-        raise HTTPException(status_code=403, detail='Forbidden: Cannot access another user\'s dashboard')
+@app.get('/dashboard/me', response_model=dict)
+def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
     cur = conn.execute(
         'SELECT duration, session_type, session_date, session_time, location FROM sessions WHERE user_id = ?',
-        (user_id_param,) # Use user_id_param from path
+        (current_user_id,)
     )
     records = cur.fetchall()
     sess = [
