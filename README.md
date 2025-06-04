@@ -51,8 +51,12 @@ Install Node dependencies inside `web/frontend` and run the Vite dev server:
 ```bash
 cd web/frontend
 npm install
+# copy the example environment file and set your backend URL if needed
+cp .env.example .env
 npm run dev
 ```
+
+The `.env` file contains a `VITE_API_URL` variable that should point to your backend API. By default it targets `http://localhost:8000`.
 
 The backend API can be started with:
 
