@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
-from datetime import time, date
+from datetime import time, date, datetime
 from fastapi import FastAPI, HTTPException, Request, Depends, Header
 from fastapi.staticfiles import StaticFiles
 from jose import JWTError, jwt as jose_jwt
@@ -126,6 +126,41 @@ class BioUpdate(BaseModel):
     bio: str
 
 
+class CustomTypeInput(BaseModel):
+    """Input model for adding a custom meditation type."""
+
+    type_name: str
+
+
+class CustomTypeResponse(BaseModel):
+    """Response model for a custom meditation type entry."""
+
+    id: int
+    type_name: str
+
+
+class BadgeResponse(BaseModel):
+    """Response model for a single awarded badge."""
+
+    badge_name: str
+    awarded_at: datetime
+
+
+class PrivateChallengeInput(BaseModel):
+    """Input model for creating or updating a private challenge."""
+
+    name: str
+    description: str
+
+
+class PrivateChallengeResponse(BaseModel):
+    """Response model for a private challenge."""
+
+    id: int
+    name: str
+    description: str
+
+
 # Removed redundant BioUpdate class definition that was present in the conflict
 
 
@@ -171,7 +206,7 @@ def create_session(
     )
     # Assuming feed.log_session was updated to work with DB
     # and potentially accepts session_id
-    feed.log_session(current_user_id, f"{info.type} {info.duration}m", session_id)
+    feed.log_session(current_user_id, f"{info.type} {info.duration}m")
     return {"session_id": session_id}
 
 
@@ -197,10 +232,10 @@ def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
     count = dashboard.calculate_session_count(sess)
     streak = dashboard.calculate_current_streak(sess)
     return {
-        "total_time": total,
-        "session_count": count,
-        "current_streak": streak,
-    }  # More descriptive keys
+        "total": total,
+        "sessions": count,
+        "streak": streak,
+    }
 
 
 @app.get("/feed", response_model=list)  # Changed path to /feed, user_id from token
@@ -332,6 +367,97 @@ def join_community_challenge(
         "status": "ok",
         "message": f"User {current_user_id} joined challenge {data.challenge_id}",
     }
+
+
+# -------------------------- Custom Meditation Types -------------------------
+
+@app.post("/users/me/custom-meditation-types", response_model=CustomTypeResponse)
+def add_custom_type(
+    data: CustomTypeInput, current_user_id: int = Depends(get_current_user)
+):
+    type_id = mindful.add_custom_meditation_type(
+        conn, current_user_id, data.type_name
+    )
+    return {"id": type_id, "type_name": data.type_name}
+
+
+@app.get(
+    "/users/me/custom-meditation-types",
+    response_model=list[CustomTypeResponse],
+)
+def list_custom_types(current_user_id: int = Depends(get_current_user)):
+    rows = mindful.get_custom_meditation_types(
+        conn, current_user_id, include_ids=True
+    )
+    return [{"id": r[0], "type_name": r[1]} for r in rows]
+
+
+@app.delete("/users/me/custom-meditation-types/{type_identifier}", response_model=dict)
+def delete_custom_type(
+    type_identifier: str, current_user_id: int = Depends(get_current_user)
+):
+    """Remove a custom meditation type by id or name."""
+    try:
+        tid = int(type_identifier)
+        conn.execute(
+            "DELETE FROM custom_meditation_types WHERE id = ? AND user_id = ?",
+            (tid, current_user_id),
+        )
+    except ValueError:
+        conn.execute(
+            "DELETE FROM custom_meditation_types WHERE type_name = ? AND user_id = ?",
+            (type_identifier, current_user_id),
+        )
+    conn.commit()
+    return {"status": "ok"}
+
+
+# -------------------------- User Badges ------------------------------------
+
+@app.get("/users/me/badges", response_model=list[BadgeResponse])
+def list_badges(current_user_id: int = Depends(get_current_user)):
+    badges = challenges.get_user_badges(
+        conn, current_user_id, include_dates=True
+    )
+    return [
+        {"badge_name": b[0], "awarded_at": b[1]} for b in badges
+    ]
+
+
+# -------------------------- Private Challenges (Premium) --------------------
+
+@app.post(
+    "/users/me/private-challenges",
+    response_model=PrivateChallengeResponse,
+)
+def create_private_challenge(
+    data: PrivateChallengeInput, current_user_id: int = Depends(get_current_user)
+):
+    if not subscriptions.is_premium(conn, current_user_id):
+        raise HTTPException(status_code=403, detail="Premium membership required")
+    challenge_id = challenges.create_challenge(
+        conn,
+        data.name,
+        current_user_id,
+        description=data.description,
+        is_private=True,
+    )
+    return {
+        "id": challenge_id,
+        "name": data.name,
+        "description": data.description,
+    }
+
+
+@app.get(
+    "/users/me/private-challenges",
+    response_model=list[PrivateChallengeResponse],
+)
+def list_private_challenges(current_user_id: int = Depends(get_current_user)):
+    rows = challenges.get_private_challenges(conn, current_user_id)
+    return [
+        {"id": r[0], "name": r[1], "description": r[2]} for r in rows
+    ]
 
 
 @app.get("/moods", response_model=list)  # Changed path, user_id from token

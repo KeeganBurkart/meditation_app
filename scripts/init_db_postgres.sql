@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS badges (
 CREATE TABLE IF NOT EXISTS challenges (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
+    description TEXT,
     created_by INTEGER NOT NULL,
     is_private BOOLEAN DEFAULT FALSE,
     FOREIGN KEY(created_by) REFERENCES users(id)

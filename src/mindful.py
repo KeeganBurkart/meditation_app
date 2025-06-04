@@ -43,22 +43,33 @@ def init_postgres_db(conn: Any) -> None:
 
 def add_custom_meditation_type(
     conn: sqlite3.Connection, user_id: int, type_name: str
-) -> None:
-    """Insert a custom meditation type for the given user."""
-    conn.execute(
-        "INSERT INTO custom_meditation_types (user_id, type_name) VALUES (?, ?)",
+) -> int:
+    """Insert a custom meditation type for the given user and return its ID."""
+    cur = conn.execute(
+        "INSERT INTO custom_meditation_types (user_id, type_name) VALUES (?, ?) RETURNING id",
         (user_id, type_name),
     )
+    custom_id = cur.fetchone()[0]
     conn.commit()
+    return custom_id
 
 
-def get_custom_meditation_types(conn: sqlite3.Connection, user_id: int) -> list[str]:
-    """Return a list of custom meditation type names for ``user_id``."""
+def get_custom_meditation_types(
+    conn: sqlite3.Connection, user_id: int, *, include_ids: bool = False
+) -> list[str] | list[tuple[int, str]]:
+    """Return custom meditation types for ``user_id``.
+
+    By default only the type names are returned. If ``include_ids`` is ``True``,
+    a list of ``(id, type_name)`` tuples is returned instead.
+    """
     cur = conn.execute(
-        "SELECT type_name FROM custom_meditation_types WHERE user_id = ?",
+        "SELECT id, type_name FROM custom_meditation_types WHERE user_id = ?",
         (user_id,),
     )
-    return [row[0] for row in cur.fetchall()]
+    rows = cur.fetchall()
+    if include_ids:
+        return [(row[0], row[1]) for row in rows]
+    return [row[1] for row in rows]
 
 
 def create_challenge(

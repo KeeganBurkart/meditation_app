@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS badges (
 CREATE TABLE IF NOT EXISTS challenges (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    description TEXT,
     created_by INTEGER NOT NULL,
     is_private INTEGER DEFAULT 0,
     FOREIGN KEY(created_by) REFERENCES users(id)
