@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict
+import sqlite3
 
 @dataclass
 class Profile:
@@ -36,3 +37,15 @@ class ProfileManager:
         if profile is None:
             return False
         return profile.is_public or requester_id == profile_user_id
+
+
+def update_bio(conn: sqlite3.Connection, user_id: int, bio: str) -> None:
+    """Persist a new bio for ``user_id`` in the database."""
+    conn.execute("UPDATE users SET bio = ? WHERE id = ?", (bio, user_id))
+    conn.commit()
+
+
+def update_photo(conn: sqlite3.Connection, user_id: int, photo_url: str) -> None:
+    """Persist a new profile photo path for ``user_id``."""
+    conn.execute("UPDATE users SET photo_url = ? WHERE id = ?", (photo_url, user_id))
+    conn.commit()

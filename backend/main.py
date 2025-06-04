@@ -2,18 +2,25 @@ from __future__ import annotations
 
 import os
 import sqlite3
-from datetime import time
+from datetime import time, date
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+from uuid import uuid4
 import logging
 from pydantic import BaseModel
 
-from src import auth, mindful, dashboard, relationships, activity, notifications, subscriptions, sessions as session_models
+from src import auth, mindful, dashboard, relationships, activity, notifications, subscriptions, sessions as session_models, profiles
 from src import monitoring
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mindful")
 
 app = FastAPI()
+
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 db_url = os.getenv("DATABASE_URL")
 if db_url and db_url.startswith("postgresql"):
@@ -68,6 +75,10 @@ class NotificationInput(BaseModel):
     reminder_time: str
     message: str
 
+
+class BioUpdate(BaseModel):
+    bio: str
+
 @app.post('/auth/signup')
 def signup(data: SignUp):
     user_id = auth.register_user(conn, data.email, data.password, display_name=data.display_name)
@@ -112,7 +123,7 @@ def get_dashboard(user_id: int):
             r[0],
             r[1],
             time.fromisoformat(r[3]) if r[3] else time(0, 0),
-            session_date=r[2],
+            session_date=date.fromisoformat(r[2]),
             location=r[4] or ''
         )
         for r in records
@@ -200,3 +211,23 @@ def get_subscription(user_id: int):
 def update_subscription(user_id: int, data: SubscriptionUpdate):
     subscriptions.subscribe_user(conn, user_id, data.tier, '2023-01-01')
     return {"status": "ok"}
+
+
+@app.put('/users/{user_id}/bio')
+def update_user_bio(user_id: int, data: BioUpdate):
+    profiles.update_bio(conn, user_id, data.bio)
+    return {"status": "ok"}
+
+
+@app.post('/users/{user_id}/photo')
+async def upload_user_photo(user_id: int, request: Request):
+    data = await request.body()
+    filename = request.headers.get("X-Filename", "upload.jpg")
+    ext = Path(filename).suffix or ".jpg"
+    filename = f"{uuid4().hex}{ext}"
+    dest = UPLOAD_DIR / filename
+    with open(dest, 'wb') as out:
+        out.write(data)
+    photo_url = f"/uploads/{filename}"
+    profiles.update_photo(conn, user_id, photo_url)
+    return {"photo_url": photo_url}
