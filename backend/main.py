@@ -106,6 +106,13 @@ class Login(BaseModel):
     password: str
 
 
+class SocialLoginInput(BaseModel):
+    """Access token obtained from a third-party auth provider."""
+
+    provider: str
+    token: str
+
+
 class SessionInput(BaseModel):
     date: str  # Expect ISO format string e.g. "YYYY-MM-DD"
     time: str | None = None  # Expect ISO format string e.g. "HH:MM" or "HH:MM:SS"
@@ -129,6 +136,10 @@ class NotificationInput(BaseModel):
 
 class BioUpdate(BaseModel):
     bio: str
+
+
+class ProfileVisibilityInput(BaseModel):
+    is_public: bool
 
 
 # Removed redundant BioUpdate class definition that was present in the conflict
@@ -158,6 +169,34 @@ def login_user(data: Login):  # Renamed for clarity
     return {"access_token": token, "token_type": "bearer"}  # Added token_type
 
 
+@app.post("/auth/social-login")
+def social_login(data: SocialLoginInput):
+    """Log in or register a user via a social provider."""
+    try:
+        provider_user_id, email = data.token.split(":", 1)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid token format")
+
+    cur = conn.execute(
+        "SELECT user_id FROM social_accounts WHERE provider = ? AND provider_user_id = ?",
+        (data.provider, provider_user_id),
+    )
+    row = cur.fetchone()
+    if row:
+        user_id = row[0]
+    else:
+        user_id = auth.register_social_user(
+            conn, data.provider, provider_user_id, email=email
+        )
+
+    monitoring.log_event(
+        "social_login", {"user": user_id, "provider": data.provider}
+    )
+    token_payload = {"user_id": user_id}
+    token = jose_jwt.encode(token_payload, SECRET_KEY, algorithm=ALGORITHM)
+    return {"access_token": token, "token_type": "bearer"}
+
+
 @app.post("/sessions", response_model=dict)  # Added response_model
 def create_session(
     info: SessionInput, current_user_id: int = Depends(get_current_user)
@@ -174,7 +213,7 @@ def create_session(
         mood_before=info.moodBefore,
         mood_after=info.moodAfter,
     )
-    # Record the session in the activity feed
+    # Log the session in the social feed
     feed.log_session(current_user_id, f"{info.type} {info.duration}m")
     return {"session_id": session_id}
 
@@ -471,6 +510,15 @@ async def upload_my_photo(
         conn, current_user_id, photo_url
     )  # Assuming profiles.update_photo exists
     return {"photo_url": photo_url}
+
+
+@app.put("/users/me/profile-visibility", response_model=dict)
+def update_profile_visibility(
+    data: ProfileVisibilityInput, current_user_id: int = Depends(get_current_user)
+):
+    """Update whether the current user's profile is public."""
+    profiles.update_visibility(conn, current_user_id, data.is_public)
+    return {"status": "ok", "message": "Profile visibility updated."}
 
 
 # Example of how to run for development, if this file is executed directly
