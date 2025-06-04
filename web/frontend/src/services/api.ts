@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:8000';
+// Use Vite environment variable so the API URL can be configured per env.
+const API_URL = (import.meta.env.VITE_API_URL as string | undefined) || 'http://localhost:8000';
 
 function getAuthHeader() {
   const token = localStorage.getItem('token');
