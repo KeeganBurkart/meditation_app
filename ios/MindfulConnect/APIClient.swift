@@ -230,6 +230,17 @@ public struct APIClient {
         _ = try await session.data(for: request)
     }
 
+    // MARK: - Ads
+    public func fetchAd() async throws -> Ad {
+        let endpoint = "ads/random"
+        let url = baseURL.appendingPathComponent(endpoint)
+        let (data, response) = try await session.data(from: url)
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 204 {
+            throw URLError(.badServerResponse)
+        }
+        return try JSONDecoder().decode(Ad.self, from: data)
+    }
+
     // MARK: - Subscription
     public func getSubscription(authToken: String) async throws -> Subscription {
         var request = URLRequest(url: baseURL.appendingPathComponent("subscriptions/me"))

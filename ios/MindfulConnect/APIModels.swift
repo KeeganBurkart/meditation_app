@@ -52,6 +52,11 @@ public struct Challenge: Codable, Identifiable {
 public struct Ad: Codable {
     public let id: Int
     public let text: String
+
+    enum CodingKeys: String, CodingKey {
+        case id = "ad_id"
+        case text
+    }
 }
 public struct SocialLoginRequest: Codable {
     public let provider: String

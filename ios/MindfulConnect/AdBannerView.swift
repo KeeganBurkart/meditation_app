@@ -3,6 +3,7 @@ import SwiftUI
 struct AdBannerView: View {
     let isPremium: Bool
     @State private var ad: Ad?
+    private let api = APIClient()
 
     var body: some View {
         Group {
@@ -19,7 +20,7 @@ struct AdBannerView: View {
                     Color.clear
                         .onAppear {
                             Task {
-                                ad = try? await MockAPIClient.shared.fetchAd()
+                                ad = try? await api.fetchAd()
                             }
                         }
                 }
