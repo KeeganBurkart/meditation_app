@@ -10,7 +10,8 @@ vi.mock("../services/api", () => ({
       display_name: "Tester",
       bio: "hello",
       photo_url: "",
-      is_public: true,
+      total_minutes: 0,
+      session_count: 0,
     }),
 }));
 
