@@ -64,4 +64,5 @@ public struct CreateMeditationTypeRequest: Codable {
 
 public struct UpdateMeditationTypeRequest: Codable {
     public let name: String
+
 }

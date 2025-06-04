@@ -54,7 +54,6 @@ public final class MockAPIClient: Networking {
 
     public func fetchAd() async throws -> Ad {
         loadJSON("ad")
-
 import Combine
 
 /// Handles communication with the backend API for authentication,

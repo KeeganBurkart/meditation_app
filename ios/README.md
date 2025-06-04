@@ -52,4 +52,3 @@ meditation types.
 `MindfulConnectApp` sets up the shared `AppViewModel` and shows `ContentView`,
 which switches between the login screen and the main settings views once
 authenticated.
-
