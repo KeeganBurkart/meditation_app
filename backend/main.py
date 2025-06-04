@@ -137,6 +137,13 @@ class Login(BaseModel):
     password: str
 
 
+class SocialLoginInput(BaseModel):
+    """Access token obtained from a third-party auth provider."""
+
+    provider: str
+    token: str
+
+
 class SessionInput(BaseModel):
     date: str  # Expect ISO format string e.g. "YYYY-MM-DD"
     time: str | None = None  # Expect ISO format string e.g. "HH:MM" or "HH:MM:SS"
@@ -160,6 +167,10 @@ class NotificationInput(BaseModel):
 
 class BioUpdate(BaseModel):
     bio: str
+
+
+class ProfileVisibilityInput(BaseModel):
+    is_public: bool
 
 
 # Removed redundant BioUpdate class definition that was present in the conflict
@@ -187,6 +198,34 @@ def login_user(data: Login):  # Renamed for clarity
     token_payload = {"user_id": user_id}
     token = jose_jwt.encode(token_payload, SECRET_KEY, algorithm=ALGORITHM)
     return {"access_token": token, "token_type": "bearer"}  # Added token_type
+
+
+@app.post("/auth/social-login")
+def social_login(data: SocialLoginInput):
+    """Log in or register a user via a social provider."""
+    try:
+        provider_user_id, email = data.token.split(":", 1)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid token format")
+
+    cur = conn.execute(
+        "SELECT user_id FROM social_accounts WHERE provider = ? AND provider_user_id = ?",
+        (data.provider, provider_user_id),
+    )
+    row = cur.fetchone()
+    if row:
+        user_id = row[0]
+    else:
+        user_id = auth.register_social_user(
+            conn, data.provider, provider_user_id, email=email
+        )
+
+    monitoring.log_event(
+        "social_login", {"user": user_id, "provider": data.provider}
+    )
+    token_payload = {"user_id": user_id}
+    token = jose_jwt.encode(token_payload, SECRET_KEY, algorithm=ALGORITHM)
+    return {"access_token": token, "token_type": "bearer"}
 
 
 @app.post("/sessions", response_model=dict)  # Added response_model
@@ -236,6 +275,7 @@ def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
         "sessions": count,
         "streak": streak,
     }
+  
 @app.get("/feed", response_model=list)  # Changed path to /feed, user_id from token
 def get_user_feed(current_user_id: int = Depends(get_current_user)):
     # This is the implementation from the third provided diff for /feed
@@ -251,12 +291,11 @@ def get_user_feed(current_user_id: int = Depends(get_current_user)):
     # how many user ids we're querying for. SQLite requires ``?`` for each value.
     placeholders = ",".join("?" for _ in user_ids_for_feed)
 
-    # Assumes 'feed_items' table and 'users.is_public' column exist. If the
-    # ``ActivityFeed`` class handles its own DB queries this will need to match
-    # that implementation.
+    # ``activity_feed`` table stores all social feed items. Ensure the query
+    # matches the schema defined in scripts/init_db.sql and ActivityFeed.
     query = (
         "SELECT f.id, f.user_id, u.display_name, f.item_type, f.message, f.timestamp, f.target_user_id "
-        "FROM feed_items f JOIN users u ON f.user_id = u.id "
+        "FROM activity_feed f JOIN users u ON f.user_id = u.id "
         f"WHERE f.user_id IN ({placeholders}) AND (u.is_public = 1 OR f.user_id = ?) "  # Check privacy or own item
         "ORDER BY f.timestamp DESC, f.id DESC LIMIT 20"  # Increased limit
     )
@@ -277,6 +316,57 @@ def get_user_feed(current_user_id: int = Depends(get_current_user)):
         }
         for r in rows
     ]
+
+
+@app.post("/feed/{feed_item_id}/comment", response_model=FeedInteractionResponse)
+def comment_on_feed_item(
+    feed_item_id: int,
+    data: CommentInput,
+    current_user_id: int = Depends(get_current_user),
+):
+    """Add a comment to a feed item."""
+    # Ensure the request body feed_item_id matches the URL parameter
+    if data.feed_item_id != feed_item_id:
+        raise HTTPException(status_code=400, detail="Mismatched feed_item_id")
+
+    cur = conn.execute(
+        "SELECT user_id FROM activity_feed WHERE id = ?",
+        (feed_item_id,),
+    )
+    row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Feed item not found")
+    target_user_id = row[0]
+    interaction_id = feed.add_comment(current_user_id, target_user_id, data.text)
+    return FeedInteractionResponse(
+        interaction_id=interaction_id, message="Comment added"
+    )
+
+
+@app.post("/feed/{feed_item_id}/encourage", response_model=FeedInteractionResponse)
+def encourage_feed_item(
+    feed_item_id: int,
+    data: EncouragementInput,
+    current_user_id: int = Depends(get_current_user),
+):
+    """Send encouragement related to a feed item."""
+    if data.feed_item_id != feed_item_id:
+        raise HTTPException(status_code=400, detail="Mismatched feed_item_id")
+
+    cur = conn.execute(
+        "SELECT user_id FROM activity_feed WHERE id = ?",
+        (feed_item_id,),
+    )
+    row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Feed item not found")
+    target_user_id = row[0]
+    interaction_id = feed.add_encouragement(
+        current_user_id, target_user_id, data.text
+    )
+    return FeedInteractionResponse(
+        interaction_id=interaction_id, message="Encouragement sent"
+    )
 
 
 @app.post("/follow", response_model=dict)
@@ -450,7 +540,6 @@ async def upload_my_photo(
         conn, current_user_id, photo_url
     )  # Assuming profiles.update_photo exists
     return {"photo_url": photo_url}
-
 
 @app.get("/ads/random", response_model=AdResponse, responses={204: {"description": "No ad available"}})
 def get_random_ad() -> AdResponse | Response:
