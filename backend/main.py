@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sqlite3
 from datetime import time, date
-from fastapi import FastAPI, HTTPException, Request, Depends, Header
+from fastapi import FastAPI, HTTPException, Request, Depends, Header, Response
 from fastapi.staticfiles import StaticFiles
 from jose import JWTError, jwt as jose_jwt
 from pathlib import Path
@@ -22,8 +22,21 @@ from src import (
     subscriptions,
     sessions as session_models,
     profiles,
+    analytics,
+    ads,
 )
 from src import monitoring
+from src.api_models import (
+    DateValuePoint,
+    ConsistencyDataResponse,
+    MoodCorrelationPoint,
+    MoodCorrelationResponse,
+    HourValuePoint,
+    TimeOfDayResponse,
+    StringValuePoint,
+    LocationFrequencyResponse,
+    AdResponse,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mindful")
@@ -67,6 +80,7 @@ async def log_requests(request: Request, call_next):
 # Assuming ActivityFeed and NotificationManager classes were updated to accept 'conn'
 feed = activity.ActivityFeed(conn)
 notify_manager = notifications.NotificationManager(conn)
+ad_manager = ads.AdManager(conn)
 
 
 def get_current_user(authorization: str = Header(None)) -> int:
@@ -88,6 +102,28 @@ def get_current_user(authorization: str = Header(None)) -> int:
         logger.error(f"JWTError: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
     return int(user_id_from_token)
+
+
+def _get_user_sessions_with_moods(user_id: int) -> list[session_models.MeditationSession]:
+    """Return all sessions for the user including mood data."""
+    cur = conn.execute(
+        "SELECT s.duration, s.session_type, s.session_date, s.session_time, s.location, m.mood_before, m.mood_after "
+        "FROM sessions s LEFT JOIN moods m ON s.id = m.session_id WHERE s.user_id = ?",
+        (user_id,),
+    )
+    rows = cur.fetchall()
+    return [
+        session_models.MeditationSession(
+            duration_minutes=r[0],
+            meditation_type=r[1],
+            session_date=date.fromisoformat(r[2]) if isinstance(r[2], str) else r[2],
+            time_of_day=time.fromisoformat(r[3]) if r[3] else time(0, 0),
+            location=r[4] or "",
+            mood_before=r[5],
+            mood_after=r[6],
+        )
+        for r in rows
+    ]
 
 
 class SignUp(BaseModel):
@@ -169,9 +205,8 @@ def create_session(
         mood_before=info.moodBefore,
         mood_after=info.moodAfter,
     )
-    # Assuming feed.log_session was updated to work with DB
-    # and potentially accepts session_id
-    feed.log_session(current_user_id, f"{info.type} {info.duration}m", session_id)
+    # Log the session in the activity feed
+    feed.log_session(current_user_id, f"{info.type} {info.duration}m")
     return {"session_id": session_id}
 
 
@@ -197,12 +232,10 @@ def get_dashboard_data(current_user_id: int = Depends(get_current_user)):
     count = dashboard.calculate_session_count(sess)
     streak = dashboard.calculate_current_streak(sess)
     return {
-        "total_time": total,
-        "session_count": count,
-        "current_streak": streak,
-    }  # More descriptive keys
-
-
+        "total": total,
+        "sessions": count,
+        "streak": streak,
+    }
 @app.get("/feed", response_model=list)  # Changed path to /feed, user_id from token
 def get_user_feed(current_user_id: int = Depends(get_current_user)):
     # This is the implementation from the third provided diff for /feed
@@ -417,6 +450,48 @@ async def upload_my_photo(
         conn, current_user_id, photo_url
     )  # Assuming profiles.update_photo exists
     return {"photo_url": photo_url}
+
+
+@app.get("/ads/random", response_model=AdResponse, responses={204: {"description": "No ad available"}})
+def get_random_ad() -> AdResponse | Response:
+    """Return a random advertisement for free-tier users."""
+    try:
+        ad = ad_manager.get_random_ad()
+    except ValueError:
+        return Response(status_code=204)
+    return AdResponse(ad_id=ad.ad_id, text=ad.text)
+
+
+@app.get("/analytics/me/consistency", response_model=ConsistencyDataResponse)
+def analytics_consistency(current_user_id: int = Depends(get_current_user)) -> ConsistencyDataResponse:
+    sessions = _get_user_sessions_with_moods(current_user_id)
+    data = analytics.consistency_over_time(sessions)
+    points = [DateValuePoint(date_str=d.isoformat(), value=v) for d, v in data.items()]
+    return ConsistencyDataResponse(points=points)
+
+
+@app.get("/analytics/me/mood-correlation", response_model=MoodCorrelationResponse)
+def analytics_mood_correlation(current_user_id: int = Depends(get_current_user)) -> MoodCorrelationResponse:
+    sessions = _get_user_sessions_with_moods(current_user_id)
+    pairs = analytics.mood_correlation_points(sessions)
+    points = [MoodCorrelationPoint(mood_before=p[0], mood_after=p[1]) for p in pairs]
+    return MoodCorrelationResponse(points=points)
+
+
+@app.get("/analytics/me/time-of-day", response_model=TimeOfDayResponse)
+def analytics_time_of_day(current_user_id: int = Depends(get_current_user)) -> TimeOfDayResponse:
+    sessions = _get_user_sessions_with_moods(current_user_id)
+    data = analytics.time_of_day_distribution(sessions)
+    points = [HourValuePoint(hour=h, value=v) for h, v in data.items()]
+    return TimeOfDayResponse(points=points)
+
+
+@app.get("/analytics/me/location-frequency", response_model=LocationFrequencyResponse)
+def analytics_location_frequency(current_user_id: int = Depends(get_current_user)) -> LocationFrequencyResponse:
+    sessions = _get_user_sessions_with_moods(current_user_id)
+    data = analytics.location_frequency(sessions)
+    points = [StringValuePoint(name=k, value=v) for k, v in data.items()]
+    return LocationFrequencyResponse(points=points)
 
 
 # Example of how to run for development, if this file is executed directly
