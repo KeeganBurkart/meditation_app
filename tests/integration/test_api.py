@@ -234,3 +234,19 @@ def test_public_profile_endpoint(client):
     assert data["display_name"] == "ProfileUser"
     assert data["total_minutes"] == 25
     assert data["session_count"] == 2
+
+
+def test_update_profile_visibility_endpoint(client):
+    headers = auth_headers(client, "vis@example.com", "pw")
+
+    resp = client.put(
+        "/users/me/profile-visibility",
+        json={"is_public": False},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+
+    import backend.main as m
+
+    cur = m.conn.execute("SELECT is_public FROM users WHERE id = 1")
+    assert cur.fetchone()[0] == 0

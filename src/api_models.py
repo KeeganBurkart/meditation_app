@@ -72,8 +72,14 @@ class CustomTypeInput(BaseModel):
 class CustomTypeResponse(BaseModel):
     """Representation of a custom meditation type."""
 
-    id: int
+    id: str
     type_name: str
+
+
+class ProfileVisibilityInput(BaseModel):
+    """Input payload for updating profile visibility."""
+
+    is_public: bool
 
 
 class BadgeResponse(BaseModel):
