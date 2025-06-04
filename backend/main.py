@@ -20,6 +20,7 @@ from src import (
     activity,
     notifications,
     subscriptions,
+    challenges,
     sessions as session_models,
     profiles,
     analytics,
@@ -34,6 +35,12 @@ from src.api_models import (
     TimeOfDayResponse,
     StringValuePoint,
     LocationFrequencyResponse,
+    AdResponse,
+    CustomTypeInput,
+    CustomTypeResponse,
+    BadgeResponse,
+    PrivateChallengeInput,
+    PrivateChallengeResponse,
 )
 from src.feed_models import (
     CommentInput,
@@ -247,6 +254,13 @@ def create_session(
         mood_after=info.moodAfter,
     )
     feed.log_session(current_user_id, f"{info.type} {info.duration}m")
+    cur = conn.execute(
+        "SELECT COUNT(*) FROM sessions WHERE user_id = ?",
+        (current_user_id,),
+    )
+    count = cur.fetchone()[0]
+    if count == 1:
+        challenges.award_badge(conn, current_user_id, "First Session Completed")
     return {"session_id": session_id}
 
 
@@ -542,7 +556,6 @@ async def upload_my_photo(
         conn, current_user_id, photo_url
     )  # Assuming profiles.update_photo exists
     return {"photo_url": photo_url}
-
 
 
 @app.get("/analytics/me/consistency", response_model=ConsistencyDataResponse)

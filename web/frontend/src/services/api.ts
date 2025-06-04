@@ -302,15 +302,22 @@ export async function socialLogin(
   provider: string,
   token: string,
 ): Promise<string | null> {
-  // Simulate a network delay then resolve a fake token
-  return new Promise((resolve) => {
-    setTimeout(() => resolve("mock_access_token"), 300);
+  const res = await fetch(`${API_URL}/auth/social-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ provider, token }),
   });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.access_token as string;
 }
 
 export async function updateProfileVisibility(isPublic: boolean) {
-  // Placeholder mock implementation
-  return new Promise((resolve) => setTimeout(resolve, 200));
+  await fetch(`${API_URL}/users/me/profile-visibility`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ is_public: isPublic }),
+  });
 }
 
 export interface UserProfile {
@@ -327,21 +334,9 @@ export interface UserProfile {
 export async function getUserProfile(
   userId: string,
 ): Promise<UserProfile | null> {
-  // Return mock profile data
-  return new Promise((resolve) =>
-    setTimeout(
-      () =>
-        resolve({
-          user_id: Number(userId),
-          display_name: "Mock User",
-          bio: "This is a mock profile.",
-          photo_url: "",
-          is_public: true,
-          total_minutes: 123,
-          session_count: 45,
-          recent_activity: ["Meditated for 10 minutes", "Completed challenge"],
-        }),
-      200,
-    ),
-  );
+  const res = await fetch(`${API_URL}/users/${userId}/profile`, {
+    headers: getAuthHeader(),
+  });
+  if (!res.ok) return null;
+  return res.json();
 }

@@ -54,5 +54,3 @@ class LocationFrequencyResponse(BaseModel):
     """Response model for location frequency charts."""
 
     points: List[StringValuePoint]
-
-

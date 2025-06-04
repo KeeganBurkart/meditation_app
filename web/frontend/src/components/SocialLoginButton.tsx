@@ -10,11 +10,19 @@ export default function SocialLoginButton({ provider, label }: Props) {
   const navigate = useNavigate();
 
   async function handleClick() {
-    // Simulate provider sign-in then call the mocked API
-    const token = await socialLogin(provider, "dummy_token");
-    if (token) {
-      localStorage.setItem("token", token);
-      navigate("/dashboard");
+    try {
+      // TODO: Integrate real OAuth flows for each provider
+      const providerToken = `${provider}_demo_token`;
+      const token = await socialLogin(provider, providerToken);
+      if (token) {
+        localStorage.setItem("token", token);
+        navigate("/dashboard");
+      } else {
+        alert("Social login failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Social login failed");
     }
   }
 
