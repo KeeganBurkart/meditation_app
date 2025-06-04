@@ -1,11 +1,7 @@
-import sys
-from pathlib import Path
 from datetime import date, time
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
-
-from sessions import MeditationSession
-from feed import build_feed
+from src.sessions import MeditationSession
+from src.feed import build_feed
 
 
 def sample_sessions() -> dict[int, list[MeditationSession]]:

@@ -1,10 +1,6 @@
-import sys
-from pathlib import Path
 from datetime import time
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
-
-from notifications import NotificationManager
+from src.notifications import NotificationManager
 
 
 def test_add_and_get_notifications():

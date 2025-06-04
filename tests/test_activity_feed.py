@@ -1,9 +1,4 @@
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
-
-from activity import ActivityFeed
+from src.activity import ActivityFeed
 
 
 def test_activity_feed():

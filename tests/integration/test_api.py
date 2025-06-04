@@ -4,9 +4,6 @@ import importlib
 
 from fastapi.testclient import TestClient
 
-# Ensure src modules can be imported
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
-
 
 def create_client(db_path):
     """Return a TestClient using a temporary SQLite database."""

@@ -4,7 +4,7 @@ from collections import Counter
 from datetime import date
 from typing import Iterable, Dict, Tuple, List
 
-from sessions import MeditationSession
+from .sessions import MeditationSession
 
 
 def consistency_over_time(sessions: Iterable[MeditationSession]) -> Dict[date, int]:

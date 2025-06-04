@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Iterable, List
 
-from sessions import MeditationSession
+from .sessions import MeditationSession
 
 
 @dataclass

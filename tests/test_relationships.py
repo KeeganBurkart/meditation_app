@@ -1,11 +1,7 @@
-import sys
-from pathlib import Path
 import sqlite3
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
-
-import mindful
-from relationships import (
+from src import mindful
+from src.relationships import (
     follow_user,
     unfollow_user,
     get_followers,

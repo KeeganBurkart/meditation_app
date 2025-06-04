@@ -1,10 +1,6 @@
-import sys
-from pathlib import Path
 import sqlite3
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
-
-import mindful
+from src import mindful
 
 
 def test_log_and_retrieve_moods():
