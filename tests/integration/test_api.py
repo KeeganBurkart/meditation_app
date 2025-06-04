@@ -29,47 +29,8 @@ def client(tmp_path):
     yield from setup_client(tmp_path)
 
 
-def test_signup_and_login(client):
-    resp = client.post(
-        "/auth/signup",
-        json={
-            "email": "user@example.com",
-            "password": "secret",
-            "display_name": "User",
-        },
-    )
-    assert resp.status_code == 200
-    user_id = resp.json()["user_id"]
-
-    resp = client.post(
-        "/auth/login", json={"email": "user@example.com", "password": "secret"}
-    )
-    assert resp.status_code == 200
-    token = resp.json()["access_token"]
-    assert token
-
-
-def test_login_failure(client):
-    client.post(
-        "/auth/signup", json={"email": "user2@example.com", "password": "secret"}
-    )
-    resp = client.post(
-        "/auth/login", json={"email": "user2@example.com", "password": "wrong"}
-    )
-    assert resp.status_code == 401
-
-
 def test_sessions_and_dashboard(client):
-    resp = client.post(
-        "/auth/signup", json={"email": "dash@example.com", "password": "pass"}
-    )
-    user_id = resp.json()["user_id"]
-
-    login = client.post(
-        "/auth/login", json={"email": "dash@example.com", "password": "pass"}
-    )
-    token = login.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
+    headers = {}
 
     client.post(
         "/sessions",
@@ -103,33 +64,21 @@ def test_sessions_and_dashboard(client):
     }
 
 
-def test_dashboard_empty_after_signup(client):
-    resp = client.post(
-        "/auth/signup", json={"email": "empty@example.com", "password": "pw"}
-    )
-    assert resp.status_code == 200
-
-    login = client.post(
-        "/auth/login", json={"email": "empty@example.com", "password": "pw"}
-    )
-    token = login.json()["access_token"]
-    headers = {"Authorization": f"Bearer {token}"}
-
-    resp = client.get("/dashboard/me", headers=headers)
+def test_dashboard_empty_initially(client):
+    resp = client.get("/dashboard/me")
     assert resp.status_code == 200
     assert resp.json() == {"total": 0, "sessions": 0, "streak": 0}
 
 
 def auth_headers(client, email: str, password: str, display_name: str = "User"):
-    client.post(
-        "/auth/signup",
-        json={"email": email, "password": password, "display_name": display_name},
+    # Update the display name for the default user to simulate account details
+    import backend.main as m
+    m.conn.execute(
+        "UPDATE users SET display_name = ? WHERE id = 1",
+        (display_name,),
     )
-    resp = client.post(
-        "/auth/login", json={"email": email, "password": password}
-    )
-    token = resp.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
+    m.conn.commit()
+    return {}
 
 
 def test_custom_type_crud(client):
@@ -194,7 +143,7 @@ def test_private_challenge_crud_with_premium_check(client):
     headers = auth_headers(client, "premium@example.com", "pw")
     import backend.main as m
     m.subscriptions.subscribe_user(
-        m.conn, 2, "premium", "2023-01-01"
+        m.conn, 1, "premium", "2023-01-01"
     )
 
     resp = client.post(

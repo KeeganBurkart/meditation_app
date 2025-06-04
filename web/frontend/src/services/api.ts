@@ -28,36 +28,10 @@ async function fetchOk(
 }
 
 function getAuthHeader() {
-  // Access tokens are stored in ``localStorage`` after login. When present we
-  // send them as a ``Bearer`` token so protected endpoints authenticate the
-  // current user.
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  // Authentication is disabled; no headers are required.
+  return {};
 }
 
-export async function signup(
-  email: string,
-  password: string,
-  displayName: string,
-) {
-  return fetchOk(`${API_URL}/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, display_name: displayName }),
-  });
-}
-
-export async function login(
-  email: string,
-  password: string,
-): Promise<string | null> {
-  const res = await fetchJson<{ access_token: string }>(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  return res ? res.access_token : null;
-}
 
 export interface SessionData {
   date: string;
