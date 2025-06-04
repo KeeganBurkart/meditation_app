@@ -10,7 +10,7 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 
 ## 2. Authentication & User Accounts
 - [ ] Implement email/password and social login options
-- [ ] Build user profile pages showing photo, bio, stats, and recent activity
+- [x] Build user profile pages showing photo, bio, stats, and recent activity
 - [ ] Add privacy settings for profile visibility
 
 ## 3. Meditation Logging
