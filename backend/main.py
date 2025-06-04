@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sqlite3
 from datetime import time
 from fastapi import FastAPI, HTTPException
@@ -8,7 +9,8 @@ from pydantic import BaseModel
 from src import auth, mindful, dashboard, relationships, activity, notifications, sessions as session_models
 
 app = FastAPI()
-conn = sqlite3.connect('mindful.db', check_same_thread=False)
+DB_FILE = os.getenv("DB_FILE", "mindful.db")
+conn = sqlite3.connect(DB_FILE, check_same_thread=False)
 mindful.init_db(conn)
 
 feed = activity.ActivityFeed()
