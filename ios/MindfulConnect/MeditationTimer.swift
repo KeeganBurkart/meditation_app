@@ -5,6 +5,7 @@ public struct MeditationSession: Codable {
     public let duration: TimeInterval
     public let startDate: Date
     public let endDate: Date
+    public let photoURL: URL?
 }
 
 public class SessionLogger {
@@ -28,6 +29,15 @@ public class SessionLogger {
             print("Failed to log session: \(error)")
         }
     }
+
+    public func uploadSessionPhoto(sessionId: Int, photoData: Data, filename: String, token: String) {
+        guard let url = URL(string: "http://localhost:8000/sessions/\(sessionId)/photo") else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(filename, forHTTPHeaderField: "X-Filename")
+        URLSession.shared.uploadTask(with: request, from: photoData).resume()
+    }
 }
 
 public class MeditationTimer: ObservableObject {
@@ -36,11 +46,16 @@ public class MeditationTimer: ObservableObject {
     private var timerCancellable: AnyCancellable?
     private let logger: SessionLogger
     private let startDate: Date
+    private var photoURL: URL?
 
     public init(duration: TimeInterval, logger: SessionLogger = SessionLogger()) {
         self.duration = duration
         self.logger = logger
         self.startDate = Date()
+    }
+
+    public func attachPhoto(url: URL) {
+        self.photoURL = url
     }
 
     public func start() {
@@ -62,7 +77,7 @@ public class MeditationTimer: ObservableObject {
 
     private func finishSession() {
         stop()
-        let session = MeditationSession(duration: duration, startDate: startDate, endDate: Date())
+        let session = MeditationSession(duration: duration, startDate: startDate, endDate: Date(), photoURL: photoURL)
         logger.log(session: session)
     }
 }

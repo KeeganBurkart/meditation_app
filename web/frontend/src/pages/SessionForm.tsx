@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
-import { logSession, getCustomTypes, CustomMeditationType } from "../services/api";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { logSession, uploadSessionPhoto } from "../services/api";
 
 export default function SessionForm() {
+  const navigate = useNavigate();
+  const [photo, setPhoto] = useState<File | null>(null);
   const [form, setForm] = useState({
     date: "",
     time: "",
@@ -25,13 +28,27 @@ export default function SessionForm() {
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files && e.target.files[0]) {
+      setPhoto(e.target.files[0]);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await logSession({
+    const sessionId = await logSession({
       ...form,
       duration: Number(form.duration),
     });
+    let photoUrl: string | undefined;
+    if (sessionId && photo) {
+      const resp = await uploadSessionPhoto(sessionId, photo);
+      photoUrl = resp?.photo_url;
+    }
     setForm({ ...form, notes: "" });
+    if (sessionId) {
+      navigate(`/sessions/${sessionId}`, { state: { ...form, photo_url: photoUrl } });
+    }
   }
 
   return (
@@ -116,6 +133,10 @@ export default function SessionForm() {
             min="1"
             max="10"
           />
+        </label>
+        <label>
+          Photo
+          <input type="file" onChange={handleFileChange} />
         </label>
         <button type="submit">Save Session</button>
       </form>

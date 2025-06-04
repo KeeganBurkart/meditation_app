@@ -71,6 +71,9 @@ export async function logSession(data: SessionData) {
     headers: { "Content-Type": "application/json", ...getAuthHeader() },
     body: JSON.stringify(data),
   });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.session_id as number;
 }
 
 export async function getDashboard() {

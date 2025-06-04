@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Timer from "./pages/Timer";
 import SessionForm from "./pages/SessionForm";
+import SessionDetails from "./pages/SessionDetails";
 import Dashboard from "./pages/Dashboard";
 import ActivityFeedPage from "./pages/ActivityFeed";
 import CommunityChallenges from "./pages/CommunityChallenges";
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/timer" element={<Timer />} />
         <Route path="/session" element={<SessionForm />} />
+        <Route path="/sessions/:id" element={<SessionDetails />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/feed" element={<ActivityFeedPage />} />
         <Route path="/challenges" element={<CommunityChallenges />} />

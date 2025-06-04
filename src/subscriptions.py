@@ -69,6 +69,9 @@ PREMIUM_FEATURES = {
     "private_challenges",
 }
 
+# Free tier users can only follow this many people
+FREE_TIER_FRIEND_LIMIT = 50
+
 
 def has_feature_access(conn: sqlite3.Connection, user_id: int, feature: str) -> bool:
     """Return ``True`` if ``user_id`` may access ``feature``."""

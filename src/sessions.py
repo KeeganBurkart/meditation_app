@@ -14,3 +14,4 @@ class MeditationSession:
     location: str
     mood_before: Optional[int] = None
     mood_after: Optional[int] = None
+    photo_url: Optional[str] = None
