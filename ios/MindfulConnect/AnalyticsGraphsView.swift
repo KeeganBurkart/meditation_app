@@ -66,22 +66,20 @@ struct AnalyticsGraphsView: View {
     }
 
     private func loadData() {
-        _ = api.fetchConsistency(authToken: authToken)
-            .sink(receiveCompletion: { _ in }, receiveValue: { resp in
+        Task {
+            if let resp = try? await api.fetchConsistency(authToken: authToken) {
                 consistency = resp.points
-            })
-        _ = api.fetchMoodCorrelation(authToken: authToken)
-            .sink(receiveCompletion: { _ in }, receiveValue: { resp in
+            }
+            if let resp = try? await api.fetchMoodCorrelation(authToken: authToken) {
                 mood = resp.points
-            })
-        _ = api.fetchTimeOfDay(authToken: authToken)
-            .sink(receiveCompletion: { _ in }, receiveValue: { resp in
+            }
+            if let resp = try? await api.fetchTimeOfDay(authToken: authToken) {
                 timeOfDay = resp.points
-            })
-        _ = api.fetchLocationFrequency(authToken: authToken)
-            .sink(receiveCompletion: { _ in }, receiveValue: { resp in
+            }
+            if let resp = try? await api.fetchLocationFrequency(authToken: authToken) {
                 locations = resp.points
-            })
+            }
+        }
     }
 }
 
