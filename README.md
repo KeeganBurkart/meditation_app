@@ -43,3 +43,11 @@ These technologies were chosen for their strong community support, modern featur
 ## Dashboard Analytics
 
 The `src/dashboard.py` module provides helper functions to calculate total meditation time, session count, and current streaks from a list of `MeditationSession` objects.
+
+## Monetization
+
+Mindful Connect includes a Premium tier that unlocks advanced statistics,
+unlimited friends, and private challenges. The `subscriptions` module tracks a
+user's tier so the app can gate these features. Free tier users may see small
+text advertisements served via the `ads` module.
+

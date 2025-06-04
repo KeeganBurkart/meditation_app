@@ -45,9 +45,9 @@ This document outlines the major tasks required to build the "Mindful Connect" i
 - [ ] Ensure responsive design for desktop and mobile browsers
 
 ## 9. Monetization
-- [ ] Set up subscription infrastructure for premium tier
-- [ ] Gate premium features (advanced stats, unlimited friends, private challenges)
-- [ ] Consider ad placement for free tier
+- [x] Set up subscription infrastructure for premium tier
+- [x] Gate premium features (advanced stats, unlimited friends, private challenges)
+- [x] Consider ad placement for free tier
 
 ## 10. UI/UX Design
 - [x] Create a calm and minimalist design language
