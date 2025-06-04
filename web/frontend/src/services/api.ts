@@ -46,6 +46,25 @@ export interface SessionData {
   moodAfter: number;
 }
 
+export interface FeedComment {
+  comment_id: number;
+  feed_item_id: number;
+  user_id: number;
+  text: string;
+}
+
+export interface FeedEncouragement {
+  encouragement_id: number;
+  feed_item_id: number;
+  user_id: number;
+  text: string;
+}
+
+export interface Ad {
+  ad_id: number;
+  text: string;
+}
+
 export async function logSession(data: SessionData) {
   await fetch(`${API_URL}/sessions`, {
     method: "POST",
@@ -136,4 +155,36 @@ export async function uploadPhoto(file: File) {
   });
   if (!res.ok) return null;
   return res.json();
+}
+
+export async function addFeedComment(
+  feedItemId: number,
+  text: string,
+): Promise<FeedComment | null> {
+  const res = await fetch(`${API_URL}/feed/${feedItemId}/comment`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) return null;
+  return res.json() as Promise<FeedComment>;
+}
+
+export async function addFeedEncouragement(
+  feedItemId: number,
+  text: string,
+): Promise<FeedEncouragement | null> {
+  const res = await fetch(`${API_URL}/feed/${feedItemId}/encourage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) return null;
+  return res.json() as Promise<FeedEncouragement>;
+}
+
+export async function getRandomAd(): Promise<Ad | null> {
+  const res = await fetch(`${API_URL}/ads/random`, { headers: getAuthHeader() });
+  if (!res.ok) return null;
+  return res.json() as Promise<Ad>;
 }
