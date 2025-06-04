@@ -104,3 +104,14 @@ class PrivateChallengeResponse(BaseModel):
     created_by: int | None = None
     is_private: bool | None = None
     description: str | None = None
+
+
+class PublicProfileResponse(BaseModel):
+    """Public profile information with aggregated statistics."""
+
+    user_id: int
+    display_name: str | None = None
+    bio: str | None = None
+    photo_url: str | None = None
+    total_minutes: int
+    session_count: int
