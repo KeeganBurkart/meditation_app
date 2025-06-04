@@ -3,8 +3,8 @@ import SwiftUI
 struct PrivateChallengesView: View {
     @EnvironmentObject var viewModel: AppViewModel
     @State private var challenges: [Challenge] = []
-    @State private var isPremium: Bool = false
-    private let api = APIClient()
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     var body: some View {
         Group {
@@ -20,22 +20,28 @@ struct PrivateChallengesView: View {
                         }
                     }
                 }
+                .onAppear {
+                    Task {
+                        isLoading = true
+                        do {
+                            challenges = try await MockAPIClient.shared.fetchPrivateChallenges(for: 1)
+                        } catch {
+                            errorMessage = error.localizedDescription
+                        }
+                        isLoading = false
+                    }
+                }
+                .overlay {
+                    if isLoading { ProgressView() }
+                }
+                .alert("Error", isPresented: Binding(get: { errorMessage != nil }, set: { _ in errorMessage = nil })) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(errorMessage ?? "")
+                }
             } else {
                 Text("Premium required to manage private challenges.")
                     .padding()
-            }
-        }
-        .onAppear {
-            Task {
-                guard let token = viewModel.authToken else { return }
-                if let sub = try? await api.getSubscription(authToken: token) {
-                    isPremium = sub.tier.lowercased() == "premium"
-                    if isPremium {
-                        if let items = try? await api.fetchPrivateChallenges(authToken: token) {
-                            challenges = items
-                        }
-                    }
-                }
             }
         }
     }

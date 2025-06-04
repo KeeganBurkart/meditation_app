@@ -4,6 +4,9 @@ struct ActivityFeedView: View {
     @EnvironmentObject var viewModel: AppViewModel
     @State private var feedItems: [FeedItem] = []
     @State private var newMessage: String = ""
+    @State private var targetUserId: Int = 0
+    @State private var isLoading = false
+    @State private var errorMessage: String?
     @State private var targetItemId: Int = 0
     private let api = APIClient()
 
@@ -25,20 +28,28 @@ struct ActivityFeedView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                 Button("Comment") {
                     Task {
-                        guard let token = viewModel.authToken else { return }
-                        if let item = try? await api.addFeedComment(feedItemId: targetItemId, text: newMessage, authToken: token) {
+                        isLoading = true
+                        do {
+                            let item = try await MockAPIClient.shared.sendComment(newMessage, from: 1, to: targetUserId)
                             feedItems.insert(item, at: 0)
                             newMessage = ""
+                        } catch {
+                            errorMessage = error.localizedDescription
                         }
+                        isLoading = false
                     }
                 }
                 Button("Encourage") {
                     Task {
-                        guard let token = viewModel.authToken else { return }
-                        if let item = try? await api.addFeedEncouragement(feedItemId: targetItemId, text: newMessage, authToken: token) {
+                        isLoading = true
+                        do {
+                            let item = try await MockAPIClient.shared.sendEncouragement(newMessage, from: 1, to: targetUserId)
                             feedItems.insert(item, at: 0)
                             newMessage = ""
+                        } catch {
+                            errorMessage = error.localizedDescription
                         }
+                        isLoading = false
                     }
                 }
             }
@@ -46,11 +57,23 @@ struct ActivityFeedView: View {
         }
         .onAppear {
             Task {
-                guard let token = viewModel.authToken else { return }
-                if let items = try? await api.fetchFeed(authToken: token) {
+                isLoading = true
+                do {
+                    let items = try await MockAPIClient.shared.fetchFeed()
                     feedItems = items
+                } catch {
+                    errorMessage = error.localizedDescription
                 }
+                isLoading = false
             }
+        }
+        .overlay {
+            if isLoading { ProgressView() }
+        }
+        .alert("Error", isPresented: Binding(get: { errorMessage != nil }, set: { _ in errorMessage = nil })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
         }
     }
 }
