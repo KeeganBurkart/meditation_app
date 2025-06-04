@@ -4,7 +4,10 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT,
     display_name TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    bio TEXT,
+    photo_url TEXT,
+    is_public BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS social_accounts (

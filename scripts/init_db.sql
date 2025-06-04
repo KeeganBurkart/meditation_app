@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT,
     display_name TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    bio TEXT,
+    photo_url TEXT,
+    is_public INTEGER DEFAULT 1
 );
 
 -- Optional social login providers for each user
