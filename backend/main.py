@@ -5,7 +5,7 @@ import sqlite3
 from datetime import time, date
 from fastapi import FastAPI, HTTPException, Request, Depends, Header
 from fastapi.staticfiles import StaticFiles
-from jose import JWTError, jwt
+from jose import JWTError, jwt as jose_jwt
 from pathlib import Path
 from uuid import uuid4
 
@@ -59,7 +59,7 @@ def get_current_user(authorization: str = Header(None)) -> int:
         raise HTTPException(status_code=401, detail="Not authenticated: Missing token")
     token = authorization.split(" ", 1)[1]
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jose_jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id_from_token = payload.get("user_id")
         if user_id_from_token is None: # Check if user_id key exists and is not None
             raise HTTPException(status_code=401, detail="Invalid token: user_id missing")
@@ -115,7 +115,7 @@ def login_user(data: Login): # Renamed for clarity
     user_id = row[0]
     monitoring.log_event("login", {"user": user_id})
     token_payload = {"user_id": user_id}
-    token = jwt.encode(token_payload, SECRET_KEY, algorithm=ALGORITHM)
+    token = jose_jwt.encode(token_payload, SECRET_KEY, algorithm=ALGORITHM)
     return {"access_token": token, "token_type": "bearer"} # Added token_type
 
 @app.post('/sessions', response_model=dict) # Added response_model
